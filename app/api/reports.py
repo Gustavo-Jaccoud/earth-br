@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 
 from app.api.deps import (
     get_farm_or_404_for_plot,
+    get_farm_repo,
     get_ibge,
     get_plot_or_404,
     get_power_client,
@@ -12,11 +13,12 @@ from app.api.deps import (
 from app.clients.power import PowerClient
 from app.models.farms import Farm, Plot
 from app.models.reports import AnalysisRequest, Report, ReportSummary
+from app.repositories.farms import FarmRepository
 from app.repositories.ibge import IbgeRepository
 from app.repositories.rasters import RasterStore
 from app.repositories.region import Region
 from app.repositories.reports import ReportRepository
-from app.services import reports, rotation
+from app.services import pdf, reports, rotation
 from app.services.texts import render
 
 router = APIRouter(tags=["relatórios"])
@@ -61,5 +63,18 @@ def get_report(report_id: int, repo: ReportRepository = Depends(get_report_repo)
 
 @router.get("/reports/{report_id}/pdf", response_class=Response,
             responses={200: {"content": {"application/pdf": {}}}})
-def get_report_pdf(report_id: int) -> Response:
-    return Response(content=b"%PDF-1.4\n%exemplo\n", media_type="application/pdf")
+def get_report_pdf(
+    report_id: int,
+    repo: ReportRepository = Depends(get_report_repo),
+    farms: FarmRepository = Depends(get_farm_repo),
+) -> Response:
+    """Relatório em PDF, pronto para baixar e compartilhar."""
+    report = repo.get(report_id)
+    if report is None:
+        raise HTTPException(404, "Relatório não encontrado.")
+    plot = farms.get_plot(report.plot_id)
+    farm = farms.get_farm(plot.farm_id) if plot else None
+    return Response(
+        content=pdf.render_report(report, plot, farm), media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="relatorio-{report_id}.pdf"'},
+    )
