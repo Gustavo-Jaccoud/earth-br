@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api import (
     climate,
@@ -55,6 +56,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/health", tags=["sistema"])
     def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    app.mount("/static/maps", StaticFiles(directory=settings.data_dir / "maps", check_dir=False),
+              name="maps")
 
     for module in (farms, climate, signals, satellite, crops, rotation, regional, maps,
                    reports, quiz):

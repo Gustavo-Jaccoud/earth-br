@@ -5,7 +5,6 @@ Cada rota real que substitui um exemplo apaga a entrada correspondente daqui.
 from datetime import date, datetime
 
 from app.models.climate import ClimateResponse, ClimateSeries, DailyValue
-from app.models.maps import LegendItem, MapLayerIndex, MapPeriod
 from app.models.quiz import Question, QuizOption
 from app.models.reports import Report, ReportSection, ReportSummary
 from app.models.signals import Signal, SignalsResponse
@@ -31,13 +30,6 @@ SIGNALS = SignalsResponse(
                message="O solo está com 52% de umidade na raiz, dentro do esperado para a época "
                        "(média de 50%). Sem alerta."),
     ],
-)
-
-MAP = MapLayerIndex(
-    layer="ndvi", unit="1",
-    legend=[LegendItem(color="#d73027", label="0.0"), LegendItem(color="#1a9850", label="0.8")],
-    periods=[MapPeriod(period="2026-10", url="/static/maps/ndvi/2026-10.png",
-                       bounds=[[-10.45, -37.25], [-10.10, -36.85]])],
 )
 
 _SECTION = ReportSection(title="Condição atual", text=SIGNALS.signals[0].message, data={})
