@@ -13,6 +13,12 @@ class Region:
     bbox: tuple[float, float, float, float]  # min_lon, min_lat, max_lon, max_lat
     rainy_season_months: tuple[int, ...]
 
+    @property
+    def center(self) -> tuple[float, float]:
+        """(lon, lat) do centro da bbox, arredondado a 3 casas: estável como chave de cache."""
+        min_lon, min_lat, max_lon, max_lat = self.bbox
+        return round((min_lon + max_lon) / 2, 3), round((min_lat + max_lat) / 2, 3)
+
     def contains(self, poly: Polygon) -> bool:
         c = poly.centroid
         min_lon, min_lat, max_lon, max_lat = self.bbox

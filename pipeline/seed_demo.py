@@ -52,6 +52,10 @@ def main(api_base: str = "http://localhost:8000", client: httpx.Client | None = 
         status = "dados da NASA em cache" if response.status_code == 200 else (
             f"AVISO: semáforos indisponíveis ({response.status_code}): {response.text[:120]}")
         print(f"{plot['name']} (id {plot['id']}, {plot['area_ha']:.1f} ha): {status}")
+    # O panorama de causas usa o clima do centro da região: aquece esse cache também.
+    response = client.get("/regional/causes", params={"crop": "milho"})
+    if response.status_code != 200:
+        print(f"AVISO: causas ambientais indisponíveis ({response.status_code})")
     return plot_ids
 
 

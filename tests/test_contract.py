@@ -4,7 +4,6 @@ from pydantic import TypeAdapter
 from app.models.crops import Crop
 from app.models.maps import MapLayerIndex
 from app.models.quiz import Question
-from app.models.regional import CausesResponse
 from app.models.reports import Report, ReportSummary
 
 SQUARE = {
@@ -15,7 +14,6 @@ SQUARE = {
 
 # (method, path, body, expected status, response type)
 EXAMPLE_ROUTES = [
-    ("GET", "/regional/causes", None, 200, CausesResponse),
     ("GET", "/maps/ndvi", None, 200, MapLayerIndex),
     ("POST", "/plots/1/reports/analysis", None, 201, Report),
     ("GET", "/reports", None, 200, list[ReportSummary]),

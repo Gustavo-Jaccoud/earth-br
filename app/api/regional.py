@@ -2,11 +2,12 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.api import examples
-from app.api.deps import get_ibge
+from app.api.deps import get_ibge, get_power_client, get_region
+from app.clients.power import PowerClient
 from app.models.regional import CausesResponse, LossRanking
 from app.repositories.ibge import IbgeRepository
-from app.services import losses
+from app.repositories.region import Region
+from app.services import causes, losses, rotation
 
 router = APIRouter(tags=["panorama regional"])
 
@@ -32,5 +33,17 @@ def regional_losses(
 
 
 @router.get("/regional/causes")
-def regional_causes(crop: str = "milho") -> CausesResponse:
-    return examples.CAUSES
+def regional_causes(
+    crop: str = "milho",
+    ibge: IbgeRepository = Depends(get_ibge),
+    power: PowerClient = Depends(get_power_client),
+    region: Region = Depends(get_region),
+) -> CausesResponse:
+    """Perdas da cultura na região de demonstração, ano a ano, ao lado da anomalia de chuva
+    da estação chuvosa (NASA POWER) — mostra quais perdas coincidem com seca."""
+    try:
+        return causes.explain(crop, ibge, power, region)
+    except (rotation.UnknownCrop, causes.CropWithoutIbgeData) as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except causes.NoLossData as exc:
+        raise HTTPException(404, str(exc)) from exc

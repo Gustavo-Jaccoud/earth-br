@@ -7,7 +7,6 @@ from datetime import date, datetime
 from app.models.climate import ClimateResponse, ClimateSeries, DailyValue
 from app.models.maps import LegendItem, MapLayerIndex, MapPeriod
 from app.models.quiz import Question, QuizOption
-from app.models.regional import CausesResponse, CauseYear
 from app.models.reports import Report, ReportSection, ReportSummary
 from app.models.signals import Signal, SignalsResponse
 
@@ -32,12 +31,6 @@ SIGNALS = SignalsResponse(
                message="O solo está com 52% de umidade na raiz, dentro do esperado para a época "
                        "(média de 50%). Sem alerta."),
     ],
-)
-
-CAUSES = CausesResponse(
-    territory_name="Aquidabã (SE)", crop="milho",
-    years=[CauseYear(year=2012, loss_pct=41.0, rain_anomaly_pct=-48.0)],
-    message="Em 2012, a perda de milho foi de 41% e a chuva na estação ficou 48% abaixo do normal.",
 )
 
 MAP = MapLayerIndex(
