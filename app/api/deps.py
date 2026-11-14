@@ -6,6 +6,7 @@ from sqlmodel import Session
 from app.clients.power import PowerClient
 from app.models.farms import Farm, Plot
 from app.repositories.farms import FarmRepository
+from app.repositories.rasters import RasterStore
 from app.repositories.region import Region
 
 
@@ -16,6 +17,10 @@ def get_session(request: Request) -> Iterator[Session]:
 
 def get_power_client(request: Request) -> PowerClient:
     return request.app.state.power
+
+
+def get_rasters(request: Request) -> RasterStore:
+    return request.app.state.rasters
 
 
 def get_region(request: Request) -> Region:

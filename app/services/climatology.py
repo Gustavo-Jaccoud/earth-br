@@ -22,7 +22,7 @@ def window(series: pd.Series, end: date, days: int, agg: Literal["sum", "mean"])
     return mean * days if agg == "sum" else mean
 
 
-def _same_day_in(end: date, year: int) -> date:
+def same_day_in(end: date, year: int) -> date:
     try:
         return end.replace(year=year)
     except ValueError:  # 29/02 em ano não bissexto
@@ -32,6 +32,6 @@ def _same_day_in(end: date, year: int) -> date:
 def normal(series: pd.Series, end: date, days: int, years: Iterable[int],
            agg: Literal["sum", "mean"]) -> float | None:
     """Média da mesma janela (mesmo dia/mês de `end`) nos `years` informados."""
-    values = [window(series, _same_day_in(end, y), days, agg) for y in years]
+    values = [window(series, same_day_in(end, y), days, agg) for y in years]
     values = [v for v in values if v is not None]
     return sum(values) / len(values) if values else None

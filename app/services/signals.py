@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from datetime import date
+from datetime import date, timedelta
 
 import pandas as pd
 
@@ -7,7 +7,8 @@ from app.clients.power import PowerClient, last_available_date
 from app.config_loader import RainConfig, SoilMoistureConfig, Thresholds, get_config
 from app.models.farms import Plot
 from app.models.signals import Signal, SignalsResponse
-from app.services import climatology
+from app.repositories.rasters import RasterStore
+from app.services import climatology, geometry
 from app.services.texts import render
 
 POWER = "NASA POWER"
@@ -78,8 +79,26 @@ def soil_signal(series: pd.Series, normal_series: pd.Series, normal_years: Itera
                   window_days=days, source=source, message=message)
 
 
+def _satellite_series(rasters: RasterStore | None, layer: str, shape, reference: date,
+                      days: int, agg: str, min_years: int):
+    """(série, anos normais) do satélite, se ele cobre a janela de referência e tem histórico
+    suficiente (>= min_years anos com a mesma janela, fora do ano de referência); senão None."""
+    if rasters is None:
+        return None
+    series = rasters.plot_series(layer, shape)
+    if series is None or series.dropna().empty:
+        return None
+    if (series.index.min().date() > reference - timedelta(days=days - 1)
+            or series.index.max().date() < reference):
+        return None
+    candidates = range(series.index.min().year, series.index.max().year + 1)
+    years = [y for y in candidates if y != reference.year and climatology.window(
+        series, climatology.same_day_in(reference, y), days, agg) is not None]
+    return (series, years) if len(years) >= min_years else None
+
+
 def build_signals(plot: Plot, reference_date: date | None, power: PowerClient,
-                  rasters: "RasterStore | None" = None) -> SignalsResponse:  # noqa: F821
+                  rasters: RasterStore | None = None) -> SignalsResponse:
     cfg = get_config().signals
     lon, lat = plot.centroid
     data = pd.concat([power.history(lat, lon), power.recent(lat, lon)])
@@ -87,14 +106,26 @@ def build_signals(plot: Plot, reference_date: date | None, power: PowerClient,
     limit = min(last_available_date(data, "PRECTOTCORR"), last_available_date(data, "GWETROOT"))
     adjusted = reference_date is not None and reference_date > limit
     reference = limit if reference_date is None or adjusted else reference_date
+    shape = geometry.to_shape(plot.geometry)
     years = climatology.NORMAL_YEARS
-    rain, soil = data["PRECTOTCORR"], data["GWETROOT"]
-    return SignalsResponse(
-        plot_id=plot.id,
-        reference_date=reference,
-        reference_date_adjusted=adjusted,
-        signals=[
-            rain_signal(rain, rain, years, reference, cfg.rain, POWER),
-            soil_signal(soil, soil, years, reference, cfg.soil_moisture, POWER),
-        ],
-    )
+
+    sat = _satellite_series(rasters, "precipitation", shape, reference, cfg.rain.window_days,
+                            "sum", cfg.min_satellite_years)
+    if sat:
+        rain = rain_signal(sat[0], sat[0], sat[1], reference, cfg.rain,
+                           rasters.meta("precipitation")["source"])
+    else:
+        rain = rain_signal(data["PRECTOTCORR"], data["PRECTOTCORR"], years, reference, cfg.rain,
+                           POWER)
+
+    sat = _satellite_series(rasters, "soil_moisture", shape, reference,
+                            cfg.soil_moisture.window_days, "mean", cfg.min_satellite_years)
+    if sat:
+        meta = rasters.meta("soil_moisture")
+        soil = soil_signal(sat[0], sat[0], sat[1], reference, cfg.soil_moisture, meta["source"],
+                           unit=meta["units"])
+    else:
+        soil = soil_signal(data["GWETROOT"], data["GWETROOT"], years, reference,
+                           cfg.soil_moisture, POWER)
+    return SignalsResponse(plot_id=plot.id, reference_date=reference,
+                           reference_date_adjusted=adjusted, signals=[rain, soil])

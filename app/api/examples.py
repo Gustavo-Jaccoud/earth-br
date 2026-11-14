@@ -10,7 +10,6 @@ from app.models.quiz import Question, QuizOption
 from app.models.regional import CausesResponse, CauseYear, LossRanking, LossRankingItem
 from app.models.reports import Report, ReportSection, ReportSummary
 from app.models.rotation import CriterionScore, RotationOptionResult, RotationResponse
-from app.models.satellite import SatelliteSeries
 from app.models.signals import Signal, SignalsResponse
 
 _DAYS = [DailyValue(date=date(2026, 11, d), value=v)
@@ -35,10 +34,6 @@ SIGNALS = SignalsResponse(
                        "(média de 50%). Sem alerta."),
     ],
 )
-
-SATELLITE = SatelliteSeries(plot_id=1, layer="ndvi", unit="1", source="NASA MODIS",
-                            values=[DailyValue(date=date(2026, 10, 1), value=0.41),
-                                    DailyValue(date=date(2026, 10, 17), value=0.44)])
 
 ROTATION = RotationResponse(
     plot_id=1,

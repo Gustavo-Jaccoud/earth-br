@@ -30,3 +30,20 @@ def install_power(client, tmp_path, plot, *, history=True, recent=True, live=Fal
             shutil.copy(FIXTURES / f"power_{kind}.json", path)
     client.app.state.power = power
     return power
+
+
+def make_layer(data_dir, layer, start, end, value=2.0, *, source="NASA TESTE", units="mm/day",
+               lats=(-10.4, -10.3, -10.2, -10.1), lons=(-37.2, -37.1, -37.0, -36.9)):
+    """Grava um raster sintético constante em data_dir/rasters/<layer>.nc (contrato do pipeline)."""
+    import numpy as np
+    import pandas as pd
+    import xarray as xr
+
+    from pipeline.layers import write_layer
+
+    times = pd.date_range(start, end)
+    data = np.full((len(times), len(lats), len(lons)), value, dtype=float)
+    da = xr.DataArray(data, dims=("time", "lat", "lon"),
+                      coords={"time": times, "lat": list(lats), "lon": list(lons)})
+    return write_layer(da, layer, source=source, product="TESTE", units=units,
+                       resolution="0.1 deg", out_dir=Path(data_dir) / "rasters")

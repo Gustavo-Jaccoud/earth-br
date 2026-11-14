@@ -7,7 +7,6 @@ from app.models.quiz import Question
 from app.models.regional import CausesResponse, LossRanking
 from app.models.reports import Report, ReportSummary
 from app.models.rotation import RotationResponse
-from app.models.satellite import SatelliteSeries
 
 SQUARE = {
     "type": "Polygon",
@@ -18,7 +17,6 @@ ROTATION_BODY = {"options": [["milho", "feijao"], ["sorgo", "feijao_caupi"]]}
 
 # (method, path, body, expected status, response type)
 EXAMPLE_ROUTES = [
-    ("GET", "/plots/1/satellite/ndvi", None, 200, SatelliteSeries),
     ("POST", "/plots/1/rotation/compare", ROTATION_BODY, 200, RotationResponse),
     ("GET", "/regional/losses", None, 200, LossRanking),
     ("GET", "/regional/causes", None, 200, CausesResponse),
