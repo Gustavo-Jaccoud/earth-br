@@ -1,0 +1,18 @@
+# Modelos de frase em português. Quem usa passa os números já formatados.
+# {deviation} é sempre uma magnitude positiva ("60%" ou "15 mm"): a frase já diz "abaixo".
+rain.green: "Choveu {value} mm nos últimos {days} dias, perto da média da região ({normal} mm). Situação tranquila para a lavoura."
+rain.yellow: "Choveu {value} mm nos últimos {days} dias, {deviation} abaixo da média ({normal} mm). Fique atento: a lavoura pode sentir falta de água."
+rain.red: "Choveu {value} mm nos últimos {days} dias, {deviation} abaixo da média ({normal} mm). Risco alto para a lavoura."
+rain.dry_season: "Período normalmente seco: choveu {value} mm nos últimos {days} dias (média de {normal} mm). Sem alerta de falta de chuva."
+soil_moisture.green: "O solo está com {value} de umidade na raiz, dentro do esperado para a época (média de {normal}). Sem alerta."
+soil_moisture.yellow: "O solo está com {value} de umidade na raiz, {deviation} abaixo do esperado (média de {normal}). Atenção."
+soil_moisture.red: "O solo está com {value} de umidade na raiz, {deviation} abaixo do esperado (média de {normal}). Solo muito seco: risco alto de estresse hídrico."
+rotation.verdict: "A melhor opção para este talhão é {best}, com nota {total} de 100."
+rotation.no_data: "Sem dados suficientes para comparar as opções."
+causes.year: "Em {year}, a perda de {crop} foi de {loss}% e a chuva na estação ficou {rain}% abaixo do normal."
+causes.none: "Não encontramos anos de perda elevada associados à falta de chuva neste período."
+quiz.risk.low: "Risco baixo ({risk} de 100): sua lavoura está bem preparada para eventos climáticos."
+quiz.risk.medium: "Risco médio ({risk} de 100): há pontos que merecem cuidado antes da próxima safra."
+quiz.risk.high: "Risco alto ({risk} de 100): uma seca forte pode causar perdas grandes. Veja as sugestões abaixo."
+quiz.financial: "Estimativa de prejuízo num ano ruim como os piores da região: R$ {value} em {area} ha de {crop}."
+quiz.no_financial: "Não foi possível estimar o impacto financeiro: informe a cultura principal."

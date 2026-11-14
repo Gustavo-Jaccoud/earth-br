@@ -1,0 +1,36 @@
+# CONTEÚDO DE EXEMPLO — a trilha real será definida pelo time/frontend.
+# risk: 0 (baixo) a 2 (alto). suggestion aparece no relatório quando a opção é escolhida.
+questions:
+  - id: irrigacao
+    text: Sua lavoura tem irrigação?
+    options:
+      - {id: sim, label: Sim, risk: 0}
+      - {id: parcial, label: Só em parte da área, risk: 1,
+         suggestion: "Amplie a captação de água da chuva (cisternas, barraginhas) para cobrir os períodos secos."}
+      - {id: nao, label: Não, risk: 2,
+         suggestion: "Invista em captação de água da chuva e em culturas mais tolerantes à seca."}
+  - id: cobertura
+    text: O solo fica coberto com palha ou restos de cultura?
+    options:
+      - {id: sempre, label: Sempre, risk: 0}
+      - {id: as_vezes, label: Às vezes, risk: 1,
+         suggestion: "Mantenha palhada sobre o solo para reduzir a perda de água."}
+      - {id: nunca, label: Nunca, risk: 2,
+         suggestion: "Cubra o solo com palhada: ela segura a umidade e protege contra a erosão."}
+  - id: cultura
+    text: Qual é a cultura principal?
+    options:
+      - {id: milho, label: Milho, risk: 2,
+         suggestion: "Avalie trocar parte da área de milho por sorgo, mais tolerante à seca."}
+      - {id: feijao, label: Feijão, risk: 1}
+      - {id: sorgo, label: Sorgo, risk: 0}
+      - {id: mandioca, label: Mandioca, risk: 0}
+      - {id: palma, label: Palma forrageira, risk: 0}
+  - id: seca
+    text: Quanto da área foi afetada pela última seca?
+    options:
+      - {id: nenhuma, label: Nada, risk: 0}
+      - {id: ate_metade, label: Até metade, risk: 1,
+         suggestion: "Registre as perdas por talhão para planejar o próximo plantio."}
+      - {id: mais_metade, label: Mais da metade, risk: 2,
+         suggestion: "Considere rotação com leguminosas (feijão, feijão-caupi) para recuperar o solo."}

@@ -1,0 +1,11 @@
+# Limiares dos semáforos. Desvio em % em relação à média histórica (2001-2020).
+# Desvio <= yellow -> amarelo; <= red -> vermelho; senão verde.
+rain:
+  window_days: 30
+  min_normal_mm: 20          # abaixo disso a média é "seca": usa limiar absoluto em mm
+  pct: {yellow: -20, red: -50}
+  abs_deficit_mm: {yellow: 10, red: 15}
+soil_moisture:
+  window_days: 7
+  pct: {yellow: -10, red: -25}
+min_satellite_years: 5
