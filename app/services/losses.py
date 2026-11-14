@@ -48,3 +48,16 @@ def crop_loss_pct(repo: IbgeRepository, ibge_name: str, municipality_code: str |
         if len(losses) >= FALLBACK_MIN_YEARS:
             return round(float(losses["loss"].mean()) * 100, 1), level
     return None
+
+
+def crop_median_yield(repo: IbgeRepository, ibge_name: str, municipality_code: str | None,
+                      state_code: str) -> float | None:
+    """Rendimento mediano (kg/ha) da cultura no município; se faltar dado, no estado."""
+    for level, code in (("municipality", municipality_code), ("state", state_code)):
+        if not code:
+            continue
+        rows = repo.rows(level, code)
+        yields = rows[(rows["crop"] == ibge_name) & (rows["yield_kg_ha"] > 0)]["yield_kg_ha"]
+        if len(yields) >= FALLBACK_MIN_YEARS:
+            return float(yields.median())
+    return None

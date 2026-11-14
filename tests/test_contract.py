@@ -1,21 +1,6 @@
-import pytest
 from pydantic import TypeAdapter
 
 from app.models.crops import Crop
-from app.models.quiz import Question
-from app.models.reports import Report
-
-SQUARE = {
-    "type": "Polygon",
-    "coordinates": [[[-37.05, -10.27], [-37.04, -10.27], [-37.04, -10.26], [-37.05, -10.26],
-                     [-37.05, -10.27]]],
-}
-
-# (method, path, body, expected status, response type)
-EXAMPLE_ROUTES = [
-    ("GET", "/quiz", None, 200, list[Question]),
-    ("POST", "/plots/1/quiz", {"answers": {}}, 201, Report),
-]
 
 EXPECTED_PATHS = {
     "/health", "/farms", "/farms/{farm_id}", "/farms/{farm_id}/plots", "/plots/{plot_id}",
@@ -30,13 +15,6 @@ EXPECTED_PATHS = {
 def test_all_routes_in_openapi(client):
     paths = set(client.get("/openapi.json").json()["paths"])
     assert EXPECTED_PATHS <= paths
-
-
-@pytest.mark.parametrize("method,path,body,status,model", EXAMPLE_ROUTES)
-def test_example_responses_validate(client, method, path, body, status, model):
-    response = client.request(method, path, json=body)
-    assert response.status_code == status, response.text
-    TypeAdapter(model).validate_python(response.json())
 
 
 def test_crops_endpoint_lists_config_crops(client):

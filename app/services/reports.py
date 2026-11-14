@@ -16,16 +16,16 @@ TOP_LOSSES = 5
 DEFAULT_CAUSES_CROP = "milho"
 
 
-def _unavailable(title: str) -> ReportSection:
+def unavailable_section(title: str) -> ReportSection:
     return ReportSection(title=title, text=render("report.unavailable"), data={})
 
 
-def _condition(plot, reference_date, power, rasters) -> ReportSection:
-    title = "Condição atual"
+def condition_section(plot, reference_date, power, rasters,
+                      title: str = "Condição atual") -> ReportSection:
     try:
         signals = build_signals(plot, reference_date, power, rasters)
     except (PowerUnavailable, NoDataForDate):
-        return _unavailable(title)
+        return unavailable_section(title)
     return ReportSection(title=title, text=" ".join(s.message for s in signals.signals),
                          data=signals.model_dump(mode="json"))
 
@@ -35,7 +35,7 @@ def _rotation(plot, farm, request, power, rasters, ibge, region) -> ReportSectio
     try:
         result = rotation.compare(plot, farm, request, power, rasters, ibge, region)
     except PowerUnavailable:
-        return _unavailable(title)
+        return unavailable_section(title)
     return ReportSection(title=title, text=result.verdict, data=result.model_dump(mode="json"))
 
 
@@ -44,7 +44,7 @@ def _regional_losses(plot, farm, ibge, region) -> ReportSection:
     _, state = rotation.territory_codes(plot, farm, region)
     rows = ibge.rows("state", state) if state else None
     if rows is None or rows.empty:
-        return _unavailable(title)
+        return unavailable_section(title)
     items = losses.ranking(rows, min_mean_planted_ha=losses.MIN_PLANTED_HA["state"])[:TOP_LOSSES]
     text = render("report.losses", territory=ibge.territory_name("state", state),
                   items=", ".join(f"{i.crop} ({i.mean_loss_pct:.0f}%)" for i in items))
@@ -60,7 +60,7 @@ def _causes(plot, ibge, power, region) -> ReportSection:
     try:
         result = causes.explain(crop_id, ibge, power, region)
     except (PowerUnavailable, causes.NoLossData):
-        return _unavailable(title)
+        return unavailable_section(title)
     return ReportSection(title=title, text=result.message, data=result.model_dump(mode="json"))
 
 
@@ -71,7 +71,7 @@ def build_analysis(plot: Plot, farm: Farm, reference_date: date | None,
     """Seções do relatório de análise. Uma fonte que falha vira "Dado indisponível no momento."
     na própria seção, sem derrubar o relatório. Cultura desconhecida na rotação (erro do
     cliente) sobe como UnknownCrop."""
-    sections = [_condition(plot, reference_date, power, rasters)]
+    sections = [condition_section(plot, reference_date, power, rasters)]
     if rotation_request is not None:
         sections.append(_rotation(plot, farm, rotation_request, power, rasters, ibge, region))
     sections.append(_regional_losses(plot, farm, ibge, region))
