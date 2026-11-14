@@ -1,0 +1,2168 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Field Shift API",
+    "description": "\nDados da **NASA** (POWER, SMAP, GPM, MODIS) e do **IBGE** traduzidos para o produtor rural do\nNordeste: semáforos de chuva e umidade do solo, comparação de rotação de culturas, perdas por\ncultura na região e relatórios em linguagem simples.\n\n**Fluxo típico:** cadastrar propriedade → desenhar talhão (polígono) → ver os semáforos →\ncomparar rotações → gerar relatório (e baixar o PDF).\n\n**Convenções:** datas em `AAAA-MM-DD`; coordenadas em `[longitude, latitude]` (GeoJSON, WGS84);\nerros no formato `{\"detail\": \"mensagem em português\"}`. `503` significa que a NASA POWER está\nindisponível e não há dados salvos para o local.\n\nOs dados da NASA têm cerca de 2 dias de atraso: datas de referência mais recentes são ajustadas\nautomaticamente (`reference_date_adjusted`).\n",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "sistema"
+        ],
+        "summary": "Verificar se o servidor está no ar",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/farms": {
+      "get": {
+        "tags": [
+          "propriedades"
+        ],
+        "summary": "Listar propriedades",
+        "operationId": "list_farms_farms_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Farm"
+                  },
+                  "type": "array",
+                  "title": "Response List Farms Farms Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "propriedades"
+        ],
+        "summary": "Cadastrar propriedade",
+        "operationId": "create_farm_farms_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FarmCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Farm"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/farms/{farm_id}": {
+      "get": {
+        "tags": [
+          "propriedades"
+        ],
+        "summary": "Buscar propriedade",
+        "operationId": "get_farm_farms__farm_id__get",
+        "parameters": [
+          {
+            "name": "farm_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Farm Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Farm"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/farms/{farm_id}/plots": {
+      "post": {
+        "tags": [
+          "propriedades"
+        ],
+        "summary": "Cadastrar talhão (polígono GeoJSON)",
+        "operationId": "create_plot_farms__farm_id__plots_post",
+        "parameters": [
+          {
+            "name": "farm_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Farm Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlotCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "propriedades"
+        ],
+        "summary": "Listar talhões da propriedade",
+        "operationId": "list_plots_farms__farm_id__plots_get",
+        "parameters": [
+          {
+            "name": "farm_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Farm Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Plot"
+                  },
+                  "title": "Response List Plots Farms  Farm Id  Plots Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plots/{plot_id}": {
+      "get": {
+        "tags": [
+          "propriedades"
+        ],
+        "summary": "Buscar talhão",
+        "operationId": "get_plot_plots__plot_id__get",
+        "parameters": [
+          {
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plot Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plots/{plot_id}/climate": {
+      "get": {
+        "tags": [
+          "clima"
+        ],
+        "summary": "Série diária de clima (NASA POWER)",
+        "operationId": "get_climate_plots__plot_id__climate_get",
+        "parameters": [
+          {
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plot Id"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClimateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plots/{plot_id}/signals": {
+      "get": {
+        "tags": [
+          "semáforos"
+        ],
+        "summary": "Semáforos de chuva e umidade do solo",
+        "description": "Semáforos de chuva e umidade do solo. `reference_date` além do último dado\ndisponível é ajustada automaticamente (`reference_date_adjusted`).",
+        "operationId": "get_signals_plots__plot_id__signals_get",
+        "parameters": [
+          {
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plot Id"
+            }
+          },
+          {
+            "name": "reference_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reference Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plots/{plot_id}/satellite/{layer}": {
+      "get": {
+        "tags": [
+          "satélite"
+        ],
+        "summary": "Série de satélite do talhão",
+        "operationId": "get_satellite_plots__plot_id__satellite__layer__get",
+        "parameters": [
+          {
+            "name": "layer",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "ndvi",
+                "soil_moisture",
+                "precipitation"
+              ],
+              "type": "string",
+              "title": "Layer"
+            }
+          },
+          {
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plot Id"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SatelliteSeries"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/crops": {
+      "get": {
+        "tags": [
+          "culturas"
+        ],
+        "summary": "Listar culturas",
+        "operationId": "list_crops_crops_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Crop"
+                  },
+                  "type": "array",
+                  "title": "Response List Crops Crops Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plots/{plot_id}/rotation/compare": {
+      "post": {
+        "tags": [
+          "rotação"
+        ],
+        "summary": "Comparar rotações de culturas",
+        "description": "Compara sequências de culturas (ex.: milho → feijão) para o talhão: risco hídrico (chuva\nhistórica x necessidade da cultura), vigor do solo (NDVI) e perda regional (IBGE).",
+        "operationId": "compare_rotation_plots__plot_id__rotation_compare_post",
+        "parameters": [
+          {
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plot Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RotationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RotationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/regional/losses": {
+      "get": {
+        "tags": [
+          "panorama regional"
+        ],
+        "summary": "Ranking de perdas por cultura (IBGE)",
+        "description": "Ranking de culturas por perda média (IBGE PAM). Padrão: Nordeste inteiro.",
+        "operationId": "regional_losses_regional_losses_get",
+        "parameters": [
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "region",
+                "state",
+                "municipality"
+              ],
+              "type": "string",
+              "default": "region",
+              "title": "Level"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "2",
+              "title": "Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LossRanking"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/regional/causes": {
+      "get": {
+        "tags": [
+          "panorama regional"
+        ],
+        "summary": "Causas ambientais das perdas na região",
+        "description": "Perdas da cultura na região de demonstração, ano a ano, ao lado da anomalia de chuva\nda estação chuvosa (NASA POWER) — mostra quais perdas coincidem com seca.",
+        "operationId": "regional_causes_regional_causes_get",
+        "parameters": [
+          {
+            "name": "crop",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "milho",
+              "title": "Crop"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CausesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maps/{layer}": {
+      "get": {
+        "tags": [
+          "mapa"
+        ],
+        "summary": "Camada de mapa (imagens mensais e limites)",
+        "description": "Camada de mapa (PNG mensal + limites) para sobrepor ao mapa do frontend.",
+        "operationId": "get_map_layer_maps__layer__get",
+        "parameters": [
+          {
+            "name": "layer",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Layer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapLayerIndex"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plots/{plot_id}/reports/analysis": {
+      "post": {
+        "tags": [
+          "relatórios"
+        ],
+        "summary": "Gerar relatório de análise do talhão",
+        "description": "Gera e salva o relatório de análise do talhão (condição atual, rotação opcional,\nperdas na região e causas ambientais).",
+        "operationId": "create_analysis_report_plots__plot_id__reports_analysis_post",
+        "parameters": [
+          {
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plot Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/AnalysisRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports": {
+      "get": {
+        "tags": [
+          "relatórios"
+        ],
+        "summary": "Listar relatórios",
+        "operationId": "list_reports_reports_get",
+        "parameters": [
+          {
+            "name": "plot_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plot Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReportSummary"
+                  },
+                  "title": "Response List Reports Reports Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/{report_id}": {
+      "get": {
+        "tags": [
+          "relatórios"
+        ],
+        "summary": "Buscar relatório",
+        "operationId": "get_report_reports__report_id__get",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/{report_id}/pdf": {
+      "get": {
+        "tags": [
+          "relatórios"
+        ],
+        "summary": "Baixar relatório em PDF",
+        "description": "Relatório em PDF, pronto para baixar e compartilhar.",
+        "operationId": "get_report_pdf_reports__report_id__pdf_get",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quiz": {
+      "get": {
+        "tags": [
+          "partida rápida"
+        ],
+        "summary": "Perguntas da trilha (partida rápida)",
+        "description": "Perguntas da trilha (sem os pesos de risco e sugestões, que ficam no backend).",
+        "operationId": "get_quiz_quiz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Question"
+                  },
+                  "type": "array",
+                  "title": "Response Get Quiz Quiz Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plots/{plot_id}/quiz": {
+      "post": {
+        "tags": [
+          "partida rápida"
+        ],
+        "summary": "Enviar respostas e gerar o relatório final",
+        "description": "Responde a trilha e devolve o relatório final: risco, impacto ambiental e financeiro\ne sugestões de contenção de danos.",
+        "operationId": "submit_quiz_plots__plot_id__quiz_post",
+        "parameters": [
+          {
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plot Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizAnswers"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalysisRequest": {
+        "properties": {
+          "reference_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Date"
+          },
+          "rotation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RotationRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "AnalysisRequest"
+      },
+      "CauseYear": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "loss_pct": {
+            "type": "number",
+            "title": "Loss Pct"
+          },
+          "rain_anomaly_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rain Anomaly Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "loss_pct",
+          "rain_anomaly_pct"
+        ],
+        "title": "CauseYear"
+      },
+      "CausesResponse": {
+        "properties": {
+          "territory_name": {
+            "type": "string",
+            "title": "Territory Name"
+          },
+          "crop": {
+            "type": "string",
+            "title": "Crop"
+          },
+          "years": {
+            "items": {
+              "$ref": "#/components/schemas/CauseYear"
+            },
+            "type": "array",
+            "title": "Years"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "territory_name",
+          "crop",
+          "years",
+          "message"
+        ],
+        "title": "CausesResponse"
+      },
+      "ClimateResponse": {
+        "properties": {
+          "plot_id": {
+            "type": "integer",
+            "title": "Plot Id"
+          },
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/ClimateSeries"
+            },
+            "type": "array",
+            "title": "Series"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plot_id",
+          "start",
+          "end",
+          "series"
+        ],
+        "title": "ClimateResponse"
+      },
+      "ClimateSeries": {
+        "properties": {
+          "variable": {
+            "type": "string",
+            "title": "Variable"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "values": {
+            "items": {
+              "$ref": "#/components/schemas/DailyValue"
+            },
+            "type": "array",
+            "title": "Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variable",
+          "unit",
+          "source",
+          "values"
+        ],
+        "title": "ClimateSeries"
+      },
+      "CriterionScore": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "water",
+              "soil",
+              "regional_loss"
+            ],
+            "title": "Name"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "score",
+          "source",
+          "detail"
+        ],
+        "title": "CriterionScore"
+      },
+      "Crop": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "ibge_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ibge Name"
+          },
+          "soil_restoring": {
+            "type": "boolean",
+            "title": "Soil Restoring"
+          },
+          "planting_month": {
+            "type": "integer",
+            "title": "Planting Month"
+          },
+          "kc": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Kc"
+          },
+          "price_brl_per_kg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Brl Per Kg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "ibge_name",
+          "soil_restoring",
+          "planting_month",
+          "kc",
+          "price_brl_per_kg"
+        ],
+        "title": "Crop"
+      },
+      "DailyValue": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "value"
+        ],
+        "title": "DailyValue"
+      },
+      "Farm": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "municipality": {
+            "type": "string",
+            "title": "Municipality"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "ibge_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ibge Code"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "municipality",
+          "state",
+          "id"
+        ],
+        "title": "Farm"
+      },
+      "FarmCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "municipality": {
+            "type": "string",
+            "title": "Municipality"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "ibge_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ibge Code"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "municipality",
+          "state"
+        ],
+        "title": "FarmCreate"
+      },
+      "GeoJSONPolygon": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Polygon",
+            "title": "Type"
+          },
+          "coordinates": {
+            "items": {
+              "items": {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "GeoJSONPolygon"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LegendItem": {
+        "properties": {
+          "color": {
+            "type": "string",
+            "title": "Color"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "color",
+          "label"
+        ],
+        "title": "LegendItem"
+      },
+      "LossRanking": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": [
+              "region",
+              "state",
+              "municipality"
+            ],
+            "title": "Level"
+          },
+          "territory_code": {
+            "type": "string",
+            "title": "Territory Code"
+          },
+          "territory_name": {
+            "type": "string",
+            "title": "Territory Name"
+          },
+          "period": {
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Period"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LossRankingItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "territory_code",
+          "territory_name",
+          "period",
+          "source",
+          "items"
+        ],
+        "title": "LossRanking"
+      },
+      "LossRankingItem": {
+        "properties": {
+          "crop": {
+            "type": "string",
+            "title": "Crop"
+          },
+          "mean_loss_pct": {
+            "type": "number",
+            "title": "Mean Loss Pct"
+          },
+          "worst_year": {
+            "type": "integer",
+            "title": "Worst Year"
+          },
+          "worst_loss_pct": {
+            "type": "number",
+            "title": "Worst Loss Pct"
+          },
+          "years": {
+            "type": "integer",
+            "title": "Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "crop",
+          "mean_loss_pct",
+          "worst_year",
+          "worst_loss_pct",
+          "years"
+        ],
+        "title": "LossRankingItem"
+      },
+      "MapLayerIndex": {
+        "properties": {
+          "layer": {
+            "type": "string",
+            "title": "Layer"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "legend": {
+            "items": {
+              "$ref": "#/components/schemas/LegendItem"
+            },
+            "type": "array",
+            "title": "Legend"
+          },
+          "periods": {
+            "items": {
+              "$ref": "#/components/schemas/MapPeriod"
+            },
+            "type": "array",
+            "title": "Periods"
+          }
+        },
+        "type": "object",
+        "required": [
+          "layer",
+          "unit",
+          "legend",
+          "periods"
+        ],
+        "title": "MapLayerIndex"
+      },
+      "MapPeriod": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "bounds": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Bounds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "url",
+          "bounds"
+        ],
+        "title": "MapPeriod"
+      },
+      "Plot": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "current_crop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Crop"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/GeoJSONPolygon"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "farm_id": {
+            "type": "integer",
+            "title": "Farm Id"
+          },
+          "centroid": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Centroid"
+          },
+          "area_ha": {
+            "type": "number",
+            "title": "Area Ha"
+          },
+          "in_demo_region": {
+            "type": "boolean",
+            "title": "In Demo Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "geometry",
+          "id",
+          "farm_id",
+          "centroid",
+          "area_ha",
+          "in_demo_region"
+        ],
+        "title": "Plot"
+      },
+      "PlotCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "current_crop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Crop"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/GeoJSONPolygon"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "geometry"
+        ],
+        "title": "PlotCreate"
+      },
+      "Question": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/QuizOption"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "options"
+        ],
+        "title": "Question"
+      },
+      "QuizAnswers": {
+        "properties": {
+          "answers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answers"
+        ],
+        "title": "QuizAnswers"
+      },
+      "QuizOption": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "QuizOption"
+      },
+      "Report": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "plot_id": {
+            "type": "integer",
+            "title": "Plot Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "analysis",
+              "quiz"
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/ReportSection"
+            },
+            "type": "array",
+            "title": "Sections"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "plot_id",
+          "kind",
+          "title",
+          "created_at",
+          "sections"
+        ],
+        "title": "Report"
+      },
+      "ReportSection": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "text"
+        ],
+        "title": "ReportSection"
+      },
+      "ReportSummary": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "plot_id": {
+            "type": "integer",
+            "title": "Plot Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "analysis",
+              "quiz"
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "plot_id",
+          "kind",
+          "title",
+          "created_at"
+        ],
+        "title": "ReportSummary"
+      },
+      "RotationOptionResult": {
+        "properties": {
+          "crops": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Crops"
+          },
+          "scores": {
+            "items": {
+              "$ref": "#/components/schemas/CriterionScore"
+            },
+            "type": "array",
+            "title": "Scores"
+          },
+          "total": {
+            "type": "number",
+            "title": "Total"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "crops",
+          "scores",
+          "total",
+          "rank"
+        ],
+        "title": "RotationOptionResult"
+      },
+      "RotationRequest": {
+        "properties": {
+          "options": {
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "maxItems": 3,
+              "minItems": 1
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 2,
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "options"
+        ],
+        "title": "RotationRequest"
+      },
+      "RotationResponse": {
+        "properties": {
+          "plot_id": {
+            "type": "integer",
+            "title": "Plot Id"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/RotationOptionResult"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "verdict": {
+            "type": "string",
+            "title": "Verdict"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plot_id",
+          "options",
+          "verdict"
+        ],
+        "title": "RotationResponse"
+      },
+      "SatelliteSeries": {
+        "properties": {
+          "plot_id": {
+            "type": "integer",
+            "title": "Plot Id"
+          },
+          "layer": {
+            "type": "string",
+            "enum": [
+              "ndvi",
+              "soil_moisture",
+              "precipitation"
+            ],
+            "title": "Layer"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "values": {
+            "items": {
+              "$ref": "#/components/schemas/DailyValue"
+            },
+            "type": "array",
+            "title": "Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plot_id",
+          "layer",
+          "unit",
+          "source",
+          "values"
+        ],
+        "title": "SatelliteSeries"
+      },
+      "Signal": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "rain",
+              "soil_moisture"
+            ],
+            "title": "Kind"
+          },
+          "color": {
+            "type": "string",
+            "enum": [
+              "green",
+              "yellow",
+              "red"
+            ],
+            "title": "Color"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "normal": {
+            "type": "number",
+            "title": "Normal"
+          },
+          "deviation_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deviation Pct"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "color",
+          "value",
+          "normal",
+          "deviation_pct",
+          "unit",
+          "window_days",
+          "source",
+          "message"
+        ],
+        "title": "Signal"
+      },
+      "SignalsResponse": {
+        "properties": {
+          "plot_id": {
+            "type": "integer",
+            "title": "Plot Id"
+          },
+          "reference_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Reference Date"
+          },
+          "reference_date_adjusted": {
+            "type": "boolean",
+            "title": "Reference Date Adjusted"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/Signal"
+            },
+            "type": "array",
+            "title": "Signals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plot_id",
+          "reference_date",
+          "reference_date_adjusted",
+          "signals"
+        ],
+        "title": "SignalsResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "sistema",
+      "description": "Verificação de saúde do servidor."
+    },
+    {
+      "name": "propriedades",
+      "description": "Cadastro de propriedades e dos talhões (polígonos GeoJSON) de cada uma."
+    },
+    {
+      "name": "clima",
+      "description": "Série diária da NASA POWER no ponto do talhão (chuva, temperatura, umidade do solo, radiação)."
+    },
+    {
+      "name": "semáforos",
+      "description": "Semáforos de chuva e umidade do solo: verde, amarelo ou vermelho, em comparação com a média histórica, com uma frase explicativa."
+    },
+    {
+      "name": "satélite",
+      "description": "Séries de NDVI (MODIS), umidade do solo (SMAP) e chuva (GPM) do talhão. Disponível só na região de demonstração (Aquidabã/SE)."
+    },
+    {
+      "name": "culturas",
+      "description": "Culturas conhecidas pelo comparador e seus parâmetros."
+    },
+    {
+      "name": "rotação",
+      "description": "Comparador de rotação de culturas: risco hídrico, vigor do solo e perda regional."
+    },
+    {
+      "name": "panorama regional",
+      "description": "Ranking de culturas com maior perda no Nordeste (IBGE) e causas ambientais na região de demonstração."
+    },
+    {
+      "name": "mapa",
+      "description": "Camadas de mapa (imagens mensais com limites) para sobrepor ao mapa."
+    },
+    {
+      "name": "relatórios",
+      "description": "Relatórios de análise salvos, com exportação em PDF."
+    },
+    {
+      "name": "partida rápida",
+      "description": "Trilha de perguntas que gera o relatório final com risco, impacto e sugestões."
+    }
+  ]
+}

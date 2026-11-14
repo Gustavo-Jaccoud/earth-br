@@ -17,6 +17,7 @@ from app.api import (
     satellite,
     signals,
 )
+from app.api_docs import DESCRIPTION, TAGS, apply_docs
 from app.clients.power import PowerClient, PowerUnavailable
 from app.db import init_db, make_engine
 from app.repositories.ibge import IbgeRepository
@@ -37,7 +38,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         lifespan=lifespan,
         title="Field Shift API",
-        description="Dados da NASA e do IBGE traduzidos para o produtor rural do Nordeste.",
+        version="0.1.0",
+        description=DESCRIPTION,
+        openapi_tags=TAGS,
     )
     app.state.settings = settings
     app.state.engine = engine
@@ -63,6 +66,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     for module in (farms, climate, signals, satellite, crops, rotation, regional, maps,
                    reports, quiz):
         app.include_router(module.router)
+    apply_docs(app)
 
     return app
 

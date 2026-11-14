@@ -53,7 +53,11 @@ python3 -m venv .venv
 .venv/bin/pytest                                 # testes
 ```
 
-A documentação interativa de todas as rotas fica em **http://localhost:8000/docs**.
+A documentação interativa de todas as rotas (Swagger, com **Try it out**) fica em
+**http://localhost:8000/docs**; o ReDoc, em **/redoc**. A referência estática, com um exemplo de
+fluxo em `curl`, está em [`docs/api.md`](docs/api.md) e o contrato completo em
+[`docs/openapi.json`](docs/openapi.json) (para gerar clientes). Para regerar:
+`python -m app.export_openapi`.
 
 Sem internet (ex.: na apresentação): `POWER_LIVE=0 .venv/bin/uvicorn app.main:app` usa só os dados
 já salvos em `data/cache/power/`.

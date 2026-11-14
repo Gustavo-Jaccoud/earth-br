@@ -71,8 +71,11 @@ def main(start: date = date(2015, 1, 1), end: date | None = None,
         print(f"GPM {a}..{b}: job {job_id}")
         client.wait_for_processing(job_id, show_progress=False)
         files += [Path(f.result()) for f in client.download_all(job_id, directory=str(raw))]
-    with xr.open_mfdataset(sorted(files), combine="by_coords") as ds:
-        layer = to_layer(ds).load()
+    days = []
+    for path in sorted(files):  # um arquivo por dia; sem dask, abre e junta no tempo
+        with xr.open_dataset(path) as ds:
+            days.append(to_layer(ds).load())
+    layer = xr.concat(days, dim="time").sortby("time")
     return write_layer(layer, "precipitation", source="NASA GPM IMERG",
                        product="GPM_3IMERGDF.07", units="mm/day", resolution="0.1 deg",
                        out_dir=data_dir / "rasters")
