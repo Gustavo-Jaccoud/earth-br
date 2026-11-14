@@ -55,3 +55,12 @@ def test_unknown_ids_404(client, path):
 
 def test_plot_on_unknown_farm_404(client):
     assert client.post("/farms/999/plots", json=plot_body(SQUARE)).status_code == 404
+
+
+@pytest.mark.parametrize("coordinates", [[], [SQUARE, []]])
+def test_empty_polygon_or_hole_422_not_500(client, coordinates):
+    farm = make_farm(client)
+    body = {"name": "T", "geometry": {"type": "Polygon", "coordinates": coordinates}}
+    response = client.post(f"/farms/{farm['id']}/plots", json=body)
+    assert response.status_code == 422
+    assert client.get(f"/farms/{farm['id']}/plots").json() == []

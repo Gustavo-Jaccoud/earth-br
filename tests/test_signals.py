@@ -7,7 +7,7 @@ import pytest
 from app.config_loader import get_config
 from app.services.signals import NoDataForDate, classify, rain_signal, soil_signal
 from app.services.texts import render
-from tests.helpers import LAST_VALID_DAY, install_power, make_plot
+from tests.helpers import LAST_VALID_DAY, install_power, make_layer, make_plot
 
 NORMAL_YEARS = range(2001, 2006)
 REFERENCE = date(2006, 6, 30)  # janela de chuva: 1 a 30 de junho
@@ -114,3 +114,37 @@ def test_reference_date_without_data_422(client, tmp_path):
     response = client.get(f"/plots/{plot['id']}/signals?reference_date=2024-06-30")
     assert response.status_code == 422
     assert "referência" in response.json()["detail"]
+
+
+def test_offline_plot_elsewhere_in_region_uses_the_shared_cache(client, tmp_path):
+    seeded = make_plot(client)
+    install_power(client, tmp_path, seeded)  # cache só do 1º talhão
+    elsewhere = [[-37.01, -10.31], [-37.00, -10.31], [-37.00, -10.30], [-37.01, -10.30],
+                 [-37.01, -10.31]]  # ~4 km dali, mesma célula de ~50 km do POWER
+    other = make_plot(client, elsewhere)
+    assert other["centroid"] != seeded["centroid"]
+    response = client.get(f"/plots/{other['id']}/signals")
+    assert response.status_code == 200 and response.json()["signals"][0]["source"] == "NASA POWER"
+
+
+def test_satellite_gap_at_reference_date_falls_back_to_power(client, tmp_path):
+    from app.repositories.rasters import RasterStore
+
+    plot = make_plot(client)
+    install_power(client, tmp_path, plot)
+    make_layer(tmp_path, "precipitation", "2015-01-01", "2026-12-31", source="NASA GPM TESTE",
+               nan_from="2026-10-01")
+    make_layer(tmp_path, "soil_moisture", "2015-01-01", "2026-12-31", value=0.3,
+               source="NASA SMAP TESTE", units="m3/m3", nan_from="2026-11-01")
+    client.app.state.rasters = RasterStore(tmp_path)
+    response = client.get(f"/plots/{plot['id']}/signals")
+    assert response.status_code == 200
+    assert [s["source"] for s in response.json()["signals"]] == ["NASA POWER", "NASA POWER"]
+
+
+def test_no_data_message_lists_available_date_ranges(client, tmp_path):
+    plot = make_plot(client)
+    install_power(client, tmp_path, plot)
+    detail = client.get(f"/plots/{plot['id']}/signals?reference_date=2024-06-30").json()["detail"]
+    assert "2001-01-01" in detail and "2023-12-31" in detail and "2025-10-10" in detail
+    assert LAST_VALID_DAY.isoformat() in detail

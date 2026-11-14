@@ -35,3 +35,14 @@ def test_self_intersecting_rejected():
               (-37.05, -10.27)]
     with pytest.raises(ValueError, match="inválido"):
         to_shape(poly(bowtie))
+
+
+def test_empty_polygon_rejected():
+    with pytest.raises(ValueError, match="pelo menos"):
+        to_shape(GeoJSONPolygon(type="Polygon", coordinates=[]))
+
+
+@pytest.mark.parametrize("hole", [[], SQUARE[:2] + [SQUARE[0]], SQUARE[:-1]])
+def test_invalid_hole_rejected_in_portuguese(hole):
+    with pytest.raises(ValueError, match="buraco"):
+        to_shape(GeoJSONPolygon(type="Polygon", coordinates=[SQUARE, hole]))

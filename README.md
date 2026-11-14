@@ -16,6 +16,12 @@ do campo. Este backend traduz esses dados em **semáforos**, **comparações de 
 
 ## De onde vêm os dados
 
+> **Estado atual:** os semáforos, o comparador e os relatórios usam **NASA POWER** e **IBGE**.
+> SMAP, GPM e MODIS têm o código de download pronto (`pipeline/`), mas **os arquivos ainda não
+> foram baixados**: não há `data/rasters` nem `data/maps` nesta versão, e as rotas de satélite e de
+> mapa respondem 404 até o pipeline rodar. O AppEEARS (SMAP e MODIS) exige usuário e senha do
+> Earthdata e o GPM exige aceitar os termos do GES DISC — veja [`pipeline/README.md`](pipeline/README.md).
+
 | Fonte | Produto | Para que serve | Resolução |
 |---|---|---|---|
 | NASA POWER | Clima diário (chuva, temperatura, umidade do solo na raiz, radiação) | Semáforos, comparador de rotação, normal climatológica 2001–2020 | ~50 km |
@@ -44,6 +50,8 @@ em milímetros. Os dados da NASA têm ~2 dias de atraso: se a data pedida for ma
 
 ## Como rodar
 
+Rode sempre a partir da raiz do repositório (os caminhos `data/` e `var/` são relativos).
+
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
@@ -62,7 +70,7 @@ fluxo em `curl`, está em [`docs/api.md`](docs/api.md) e o contrato completo em
 Sem internet (ex.: na apresentação): `POWER_LIVE=0 .venv/bin/uvicorn app.main:app` usa só os dados
 já salvos em `data/cache/power/`.
 
-Variáveis: `DATA_DIR` (padrão `data`), `VAR_DIR` (padrão `var`, onde ficam o banco SQLite e os PDFs),
+Variáveis: `DATA_DIR` (padrão `data`), `VAR_DIR` (padrão `var`, onde fica o banco SQLite),
 `POWER_LIVE` (`0` desliga as chamadas à NASA).
 
 ## Estrutura
@@ -79,6 +87,10 @@ tests/      testes automatizados
 
 - **Resolução do NASA POWER (~50 km):** talhões vizinhos recebem os mesmos números; o mapa varia
   entre regiões, não dentro de uma fazenda.
+- **Datas sem dado:** o NASA POWER fica indisponível entre 2024-01-01 e ~400 dias atrás (o
+  histórico em cache vai até 2023-12-31 e o recente começa há ~400 dias). Nesse intervalo `/signals`
+  responde 422 listando as datas com dado, e `/climate` devolve `null`. Também não há dados antes
+  de 2001 no cache.
 - **Satélite só na região de demonstração** (Aquidabã/SE). Fora dela, e enquanto o pipeline de
   satélite não for executado, valem o POWER e o IBGE. O GPM *Final* tem atraso de meses.
 - **Coeficientes de cultura e preços** (`app/config/crops.yaml`) são aproximados e ilustrativos.
@@ -89,6 +101,7 @@ tests/      testes automatizados
   estritamente comparáveis entre si.
 - **Perda por cultura** é estimada contra o rendimento mediano do território (não é seguro agrícola
   nem dado oficial de sinistro); o IBGE municipal é grosseiro.
+- **Talhões e relatórios não podem ser apagados ou editados** (só criados e consultados).
 - **Sem login nem multiusuário**, e o banco é um SQLite local.
 - Banco do Nordeste e Data Sebrae ficaram fora desta versão.
 
