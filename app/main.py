@@ -18,6 +18,7 @@ from app.api import (
 )
 from app.clients.power import PowerClient, PowerUnavailable
 from app.db import init_db, make_engine
+from app.repositories.ibge import IbgeRepository
 from app.repositories.rasters import RasterStore
 from app.repositories.region import load_region
 from app.settings import Settings
@@ -41,6 +42,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.engine = engine
     app.state.region = load_region(settings.data_dir)
     app.state.rasters = RasterStore(settings.data_dir)
+    app.state.ibge = IbgeRepository(settings.data_dir)
     app.state.power = PowerClient(settings.data_dir / "cache" / "power", live=settings.power_live)
 
     @app.exception_handler(PowerUnavailable)

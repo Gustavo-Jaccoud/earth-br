@@ -4,7 +4,7 @@ from pydantic import TypeAdapter
 from app.models.crops import Crop
 from app.models.maps import MapLayerIndex
 from app.models.quiz import Question
-from app.models.regional import CausesResponse, LossRanking
+from app.models.regional import CausesResponse
 from app.models.reports import Report, ReportSummary
 from app.models.rotation import RotationResponse
 
@@ -18,7 +18,6 @@ ROTATION_BODY = {"options": [["milho", "feijao"], ["sorgo", "feijao_caupi"]]}
 # (method, path, body, expected status, response type)
 EXAMPLE_ROUTES = [
     ("POST", "/plots/1/rotation/compare", ROTATION_BODY, 200, RotationResponse),
-    ("GET", "/regional/losses", None, 200, LossRanking),
     ("GET", "/regional/causes", None, 200, CausesResponse),
     ("GET", "/maps/ndvi", None, 200, MapLayerIndex),
     ("POST", "/plots/1/reports/analysis", None, 201, Report),

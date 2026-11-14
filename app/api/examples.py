@@ -7,7 +7,7 @@ from datetime import date, datetime
 from app.models.climate import ClimateResponse, ClimateSeries, DailyValue
 from app.models.maps import LegendItem, MapLayerIndex, MapPeriod
 from app.models.quiz import Question, QuizOption
-from app.models.regional import CausesResponse, CauseYear, LossRanking, LossRankingItem
+from app.models.regional import CausesResponse, CauseYear
 from app.models.reports import Report, ReportSection, ReportSummary
 from app.models.rotation import CriterionScore, RotationOptionResult, RotationResponse
 from app.models.signals import Signal, SignalsResponse
@@ -56,15 +56,6 @@ ROTATION = RotationResponse(
                                    detail="Perda média de 38% na região.")]),
     ],
     verdict="A melhor opção para este talhão é sorgo → feijão-caupi, com nota 71.5 de 100.",
-)
-
-LOSSES = LossRanking(
-    level="region", territory_code="2", territory_name="Nordeste", period=(2010, 2023),
-    source="IBGE PAM",
-    items=[LossRankingItem(crop="Milho (em grão)", mean_loss_pct=24.0, worst_year=2012,
-                           worst_loss_pct=41.0, years=14),
-           LossRankingItem(crop="Feijão (em grão)", mean_loss_pct=22.0, worst_year=2012,
-                           worst_loss_pct=39.0, years=14)],
 )
 
 CAUSES = CausesResponse(
