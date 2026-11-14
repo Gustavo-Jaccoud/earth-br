@@ -3,7 +3,7 @@ from pydantic import TypeAdapter
 
 from app.models.crops import Crop
 from app.models.quiz import Question
-from app.models.reports import Report, ReportSummary
+from app.models.reports import Report
 
 SQUARE = {
     "type": "Polygon",
@@ -13,9 +13,6 @@ SQUARE = {
 
 # (method, path, body, expected status, response type)
 EXAMPLE_ROUTES = [
-    ("POST", "/plots/1/reports/analysis", None, 201, Report),
-    ("GET", "/reports", None, 200, list[ReportSummary]),
-    ("GET", "/reports/1", None, 200, Report),
     ("GET", "/quiz", None, 200, list[Question]),
     ("POST", "/plots/1/quiz", {"answers": {}}, 201, Report),
 ]

@@ -9,6 +9,7 @@ from app.repositories.farms import FarmRepository
 from app.repositories.ibge import IbgeRepository
 from app.repositories.rasters import RasterStore
 from app.repositories.region import Region
+from app.repositories.reports import ReportRepository
 
 
 def get_session(request: Request) -> Iterator[Session]:
@@ -26,6 +27,10 @@ def get_rasters(request: Request) -> RasterStore:
 
 def get_ibge(request: Request) -> IbgeRepository:
     return request.app.state.ibge
+
+
+def get_report_repo(session: Session = Depends(get_session)) -> ReportRepository:
+    return ReportRepository(session)
 
 
 def get_region(request: Request) -> Region:

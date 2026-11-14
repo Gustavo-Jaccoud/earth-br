@@ -23,7 +23,7 @@ class UnknownCrop(ValueError):
     pass
 
 
-def _territory_codes(plot: Plot, farm: Farm, region: Region) -> tuple[str | None, str | None]:
+def territory_codes(plot: Plot, farm: Farm, region: Region) -> tuple[str | None, str | None]:
     """(código IBGE do município, código da UF) usados para buscar a perda regional."""
     if farm.ibge_code:
         return farm.ibge_code, farm.ibge_code[:2]
@@ -60,7 +60,7 @@ def compare(plot: Plot, farm: Farm, request: RotationRequest, power: PowerClient
     lon, lat = plot.centroid
     clim = water.monthly_climatology(power.history(lat, lon))
     ndvi = _recent_ndvi(rasters, plot, cfg.rotation.ndvi_years)
-    municipality, state = _territory_codes(plot, farm, region)
+    municipality, state = territory_codes(plot, farm, region)
     lo, hi = cfg.rotation.ndvi_range
 
     results = []

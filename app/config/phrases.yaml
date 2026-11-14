@@ -16,3 +16,6 @@ quiz.risk.medium: "Risco médio ({risk} de 100): há pontos que merecem cuidado 
 quiz.risk.high: "Risco alto ({risk} de 100): uma seca forte pode causar perdas grandes. Veja as sugestões abaixo."
 quiz.financial: "Estimativa de prejuízo num ano ruim como os piores da região: R$ {value} em {area} ha de {crop}."
 quiz.no_financial: "Não foi possível estimar o impacto financeiro: informe a cultura principal."
+report.unavailable: "Dado indisponível no momento."
+report.losses: "Em {territory}, as culturas com maior perda média foram: {items}."
+report.title_analysis: "Análise do {plot}"
