@@ -1,17 +1,14 @@
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.api import examples
+from app.api.deps import get_ibge
 from app.models.regional import CausesResponse, LossRanking
 from app.repositories.ibge import IbgeRepository
 from app.services import losses
 
 router = APIRouter(tags=["panorama regional"])
-
-
-def get_ibge(request: Request) -> IbgeRepository:
-    return request.app.state.ibge
 
 
 @router.get("/regional/losses")

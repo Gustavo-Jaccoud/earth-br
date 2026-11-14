@@ -9,7 +9,6 @@ from app.models.maps import LegendItem, MapLayerIndex, MapPeriod
 from app.models.quiz import Question, QuizOption
 from app.models.regional import CausesResponse, CauseYear
 from app.models.reports import Report, ReportSection, ReportSummary
-from app.models.rotation import CriterionScore, RotationOptionResult, RotationResponse
 from app.models.signals import Signal, SignalsResponse
 
 _DAYS = [DailyValue(date=date(2026, 11, d), value=v)
@@ -33,29 +32,6 @@ SIGNALS = SignalsResponse(
                message="O solo está com 52% de umidade na raiz, dentro do esperado para a época "
                        "(média de 50%). Sem alerta."),
     ],
-)
-
-ROTATION = RotationResponse(
-    plot_id=1,
-    options=[
-        RotationOptionResult(
-            crops=["sorgo", "feijao_caupi"], total=71.5, rank=1,
-            scores=[CriterionScore(name="water", score=68.0, source="NASA POWER",
-                                   detail="Chuva cobre 68% da necessidade de água."),
-                    CriterionScore(name="soil", score=80.0, source="NASA MODIS",
-                                   detail="NDVI médio recente de 0.44."),
-                    CriterionScore(name="regional_loss", score=70.0, source="IBGE PAM",
-                                   detail="Perda média de 30% na região.")]),
-        RotationOptionResult(
-            crops=["milho", "feijao"], total=58.0, rank=2,
-            scores=[CriterionScore(name="water", score=52.0, source="NASA POWER",
-                                   detail="Chuva cobre 52% da necessidade de água."),
-                    CriterionScore(name="soil", score=60.0, source="NASA MODIS",
-                                   detail="NDVI médio recente de 0.44."),
-                    CriterionScore(name="regional_loss", score=62.0, source="IBGE PAM",
-                                   detail="Perda média de 38% na região.")]),
-    ],
-    verdict="A melhor opção para este talhão é sorgo → feijão-caupi, com nota 71.5 de 100.",
 )
 
 CAUSES = CausesResponse(

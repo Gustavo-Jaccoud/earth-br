@@ -6,6 +6,7 @@ from sqlmodel import Session
 from app.clients.power import PowerClient
 from app.models.farms import Farm, Plot
 from app.repositories.farms import FarmRepository
+from app.repositories.ibge import IbgeRepository
 from app.repositories.rasters import RasterStore
 from app.repositories.region import Region
 
@@ -21,6 +22,10 @@ def get_power_client(request: Request) -> PowerClient:
 
 def get_rasters(request: Request) -> RasterStore:
     return request.app.state.rasters
+
+
+def get_ibge(request: Request) -> IbgeRepository:
+    return request.app.state.ibge
 
 
 def get_region(request: Request) -> Region:
@@ -46,3 +51,12 @@ def get_plot_or_404(plot_id: int, repo: FarmRepository = Depends(get_farm_repo))
         raise HTTPException(404, "Talhão não encontrado.")
     return plot
 
+
+
+def get_farm_or_404_for_plot(
+    plot: Plot = Depends(get_plot_or_404), repo: FarmRepository = Depends(get_farm_repo)
+) -> Farm:
+    farm = repo.get_farm(plot.farm_id)
+    if farm is None:
+        raise HTTPException(404, "Propriedade não encontrada.")
+    return farm
