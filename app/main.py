@@ -23,6 +23,7 @@ from app.db import init_db, make_engine
 from app.repositories.gaez import GaezRepository
 from app.repositories.rasters import RasterStore
 from app.repositories.region import load_region
+from app.seed import seed_if_empty
 from app.settings import Settings
 
 
@@ -33,6 +34,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         init_db(engine, settings.var_dir)
+        if settings.seed_demo:
+            seed_if_empty(engine, app.state.region)
         yield
 
     app = FastAPI(

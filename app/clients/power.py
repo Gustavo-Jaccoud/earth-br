@@ -128,6 +128,9 @@ class PowerClient:
         response.raise_for_status()
         raw = response.json()
         _to_frame(raw)  # valida o formato antes de gravar
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(raw))
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(raw))
+        except OSError:
+            pass  # disco somente leitura (hospedagem): segue com o dado em memória, sem cache
         return raw

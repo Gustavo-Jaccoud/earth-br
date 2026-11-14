@@ -73,6 +73,26 @@ já salvos em `data/cache/power/`.
 Variáveis: `DATA_DIR` (padrão `data`), `VAR_DIR` (padrão `var`, onde fica o banco SQLite),
 `POWER_LIVE` (`0` desliga as chamadas à NASA).
 
+## Publicar (deploy)
+
+**Back no Render** — o arquivo [`render.yaml`](render.yaml) já descreve o serviço:
+
+1. Em <https://render.com>: *New* → *Blueprint* → escolha este repositório.
+2. O Render instala (`pip install -e .`), sobe com `uvicorn` e confere `/health`.
+3. Anote o endereço gerado (ex.: `https://earth-br-api.onrender.com`) — o front precisa dele.
+
+O blueprint define `POWER_LIVE=0` (usa só os dados da NASA versionados em `data/cache/power`) e
+`SEED_DEMO=1` (recria a propriedade de demonstração quando o banco está vazio). No plano gratuito
+o disco é apagado a cada reinício — propriedades e relatórios cadastrados se perdem — e o servidor
+"dorme" sem uso: abra o endereço alguns minutos antes de apresentar.
+
+Com `POWER_LIVE=0` os dados "recentes" param na data em que o cache foi gerado. Para atualizar,
+rode `python -m pipeline.seed_demo` localmente (com a API no ar e internet) e faça commit de
+`data/cache/power/`. Em hospedagem com disco gravável e acesso à internet, use `POWER_LIVE=1`.
+
+**Front no Vercel** — veja o README do repositório do front; ele precisa da variável
+`VITE_API_URL` apontando para o endereço do back.
+
 ## Estrutura
 
 ```
