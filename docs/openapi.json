@@ -351,6 +351,61 @@
         }
       }
     },
+    "/plots/{plot_id}/climate/monthly": {
+      "get": {
+        "tags": [
+          "clima"
+        ],
+        "summary": "Série mensal de clima contra a normal",
+        "description": "Rain (monthly total, mm), root-zone soil moisture (%) and air temperature (°C) for the\nlast `months` months, each next to the 2001-2020 normal for that calendar month. The current\nmonth is partial (`complete: false`).",
+        "operationId": "get_monthly_climate_plots__plot_id__climate_monthly_get",
+        "parameters": [
+          {
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plot Id"
+            }
+          },
+          {
+            "name": "months",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 24,
+              "minimum": 1,
+              "default": 12,
+              "title": "Months"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyClimate"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/plots/{plot_id}/signals": {
       "get": {
         "tags": [
@@ -1488,6 +1543,111 @@
         ],
         "title": "MapPeriod"
       },
+      "MonthlyClimate": {
+        "properties": {
+          "plot_id": {
+            "type": "integer",
+            "title": "Plot Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "reference_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Reference Date"
+          },
+          "normal_period": {
+            "type": "string",
+            "title": "Normal Period"
+          },
+          "variables": {
+            "items": {
+              "$ref": "#/components/schemas/MonthlySeries"
+            },
+            "type": "array",
+            "title": "Variables"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plot_id",
+          "source",
+          "reference_date",
+          "normal_period",
+          "variables"
+        ],
+        "title": "MonthlyClimate"
+      },
+      "MonthlySeries": {
+        "properties": {
+          "variable": {
+            "type": "string",
+            "title": "Variable"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/MonthlyValue"
+            },
+            "type": "array",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variable",
+          "unit",
+          "months"
+        ],
+        "title": "MonthlySeries"
+      },
+      "MonthlyValue": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "normal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normal"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "value",
+          "normal",
+          "complete"
+        ],
+        "title": "MonthlyValue"
+      },
       "Plot": {
         "properties": {
           "name": {
@@ -1589,6 +1749,15 @@
             "type": "string",
             "title": "Text"
           },
+          "type": {
+            "type": "string",
+            "enum": [
+              "single",
+              "multi",
+              "rank"
+            ],
+            "title": "Type"
+          },
           "options": {
             "items": {
               "$ref": "#/components/schemas/QuizOption"
@@ -1601,6 +1770,7 @@
         "required": [
           "id",
           "text",
+          "type",
           "options"
         ],
         "title": "Question"
@@ -1609,7 +1779,17 @@
         "properties": {
           "answers": {
             "additionalProperties": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
             },
             "type": "object",
             "title": "Answers"
@@ -1619,7 +1799,8 @@
         "required": [
           "answers"
         ],
-        "title": "QuizAnswers"
+        "title": "QuizAnswers",
+        "description": "single: option id; multi: list of option ids; rank: all option ids, most important\nfirst."
       },
       "QuizOption": {
         "properties": {

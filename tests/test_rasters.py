@@ -66,7 +66,7 @@ def test_satellite_outside_region_404(client, tmp_path):
     response = client.get(f"/plots/{plot['id']}/satellite/ndvi")
     assert response.status_code == 404
     assert response.json()["detail"] == (
-        "Dados de satélite disponíveis apenas para a região de demonstração (Aquidabã/SE)."
+        "Satellite data is only available for the demo region (Aquidabã/SE)."
     )
 
 

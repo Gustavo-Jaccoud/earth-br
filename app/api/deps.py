@@ -46,14 +46,14 @@ def get_farm_repo(
 def get_farm_or_404(farm_id: int, repo: FarmRepository = Depends(get_farm_repo)) -> Farm:
     farm = repo.get_farm(farm_id)
     if farm is None:
-        raise HTTPException(404, "Propriedade não encontrada.")
+        raise HTTPException(404, "Property not found.")
     return farm
 
 
 def get_plot_or_404(plot_id: int, repo: FarmRepository = Depends(get_farm_repo)) -> Plot:
     plot = repo.get_plot(plot_id)
     if plot is None:
-        raise HTTPException(404, "Talhão não encontrado.")
+        raise HTTPException(404, "Field not found.")
     return plot
 
 
@@ -63,5 +63,5 @@ def get_farm_or_404_for_plot(
 ) -> Farm:
     farm = repo.get_farm(plot.farm_id)
     if farm is None:
-        raise HTTPException(404, "Propriedade não encontrada.")
+        raise HTTPException(404, "Property not found.")
     return farm

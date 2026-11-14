@@ -35,7 +35,7 @@ def _value_and_normal(series, normal_series, years, reference, days, agg, source
     value = climatology.window(series, reference, days, agg)
     normal = climatology.normal(normal_series, reference, days, years, agg)
     if value is None or normal is None:
-        raise NoDataForDate(f"Sem dados de {source} para a data de referência.")
+        raise NoDataForDate(f"No {source} data for the reference date.")
     return value, normal
 
 
@@ -138,7 +138,7 @@ def build_signals(plot: Plot, reference_date: date | None, power: PowerClient,
     except NoDataForDate as exc:
         recent_from = power.recent(lat, lon).index.min().date()
         raise NoDataForDate(
-            f"{exc} Datas com dado: {HISTORY_START} a {HISTORY_END} e de {recent_from} a {limit}."
+            f"{exc} Dates with data: {HISTORY_START} to {HISTORY_END} and {recent_from} to {limit}."
         ) from exc
     return SignalsResponse(plot_id=plot.id, reference_date=reference,
                            reference_date_adjusted=adjusted, signals=[rain, soil])

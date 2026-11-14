@@ -1,36 +1,97 @@
-# CONTEÚDO DE EXEMPLO — a trilha real será definida pelo time/frontend.
-# risk: 0 (baixo) a 2 (alto). suggestion aparece no relatório quando a opção é escolhida.
+# Quick-start question trail (same 10 questions as the frontend).
+# type: single (one option), multi (one or more), rank (all options, ordered).
+# risk: 0 (low) to 2 (high) — INITIAL WEIGHTS, adjust freely. For "multi" the highest risk among
+# the chosen options counts; "rank" questions do not affect the risk score.
+# suggestion: shown in the final report when the option is chosen.
 questions:
-  - id: irrigacao
-    text: Sua lavoura tem irrigação?
+  - id: q1
+    text: What is your biggest concern this season?
+    type: single
     options:
-      - {id: sim, label: Sim, risk: 0}
-      - {id: parcial, label: Só em parte da área, risk: 1,
-         suggestion: "Amplie a captação de água da chuva (cisternas, barraginhas) para cobrir os períodos secos."}
-      - {id: nao, label: Não, risk: 2,
-         suggestion: "Invista em captação de água da chuva e em culturas mais tolerantes à seca."}
-  - id: cobertura
-    text: O solo fica coberto com palha ou restos de cultura?
+      - {id: agua, label: Water shortage, risk: 0,
+         suggestion: "Prioritize drought-tolerant crops such as sorghum and cowpea."}
+      - {id: solo, label: Weak or eroded soil, risk: 0,
+         suggestion: "Add a legume (beans or cowpea) to the rotation to rebuild the soil."}
+      - {id: calor, label: Heat and crop loss, risk: 0,
+         suggestion: "Keep crop residue on the ground: it lowers the soil temperature."}
+      - {id: renda, label: Low income, risk: 0}
+  - id: q2
+    text: How was the last season?
+    type: single
     options:
-      - {id: sempre, label: Sempre, risk: 0}
-      - {id: as_vezes, label: Às vezes, risk: 1,
-         suggestion: "Mantenha palhada sobre o solo para reduzir a perda de água."}
-      - {id: nunca, label: Nunca, risk: 2,
-         suggestion: "Cubra o solo com palhada: ela segura a umidade e protege contra a erosão."}
-  - id: cultura
-    text: Qual é a cultura principal?
+      - {id: boa, label: Good, risk: 0}
+      - {id: regular, label: Fair, risk: 1}
+      - {id: ruim, label: Poor, risk: 2}
+      - {id: perdi, label: I lost most of it, risk: 2,
+         suggestion: "Record losses field by field to plan the next planting."}
+  - id: q3
+    text: What do you do with the land after harvest?
+    type: single
     options:
-      - {id: milho, label: Milho, risk: 2,
-         suggestion: "Avalie trocar parte da área de milho por sorgo, mais tolerante à seca."}
-      - {id: feijao, label: Feijão, risk: 1}
-      - {id: sorgo, label: Sorgo, risk: 0}
-      - {id: mandioca, label: Mandioca, risk: 0}
-      - {id: palma, label: Palma forrageira, risk: 0}
-  - id: seca
-    text: Quanto da área foi afetada pela última seca?
+      - {id: pousio, label: Leave it bare (fallow), risk: 2,
+         suggestion: "Cover the soil with residue or a cover crop: it holds moisture and prevents erosion."}
+      - {id: outra, label: Plant another crop, risk: 0}
+      - {id: gado, label: Let cattle graze, risk: 1}
+      - {id: cobertura, label: "Use cover (residue, green manure)", risk: 0}
+  - id: q4
+    text: Do you notice signs of erosion?
+    type: multi
     options:
-      - {id: nenhuma, label: Nada, risk: 0}
-      - {id: ate_metade, label: Até metade, risk: 1,
-         suggestion: "Registre as perdas por talhão para planejar o próximo plantio."}
-      - {id: mais_metade, label: Mais da metade, risk: 2,
-         suggestion: "Considere rotação com leguminosas (feijão, feijão-caupi) para recuperar o solo."}
+      - {id: sulcos, label: Gullies in the ground, risk: 2,
+         suggestion: "Plant along contour lines to slow runoff and keep the soil in place."}
+      - {id: levada, label: Soil washed away by rain, risk: 2,
+         suggestion: "Keep the soil covered at the start of the rains, when erosion is worst."}
+      - {id: raizes, label: Exposed roots, risk: 1}
+      - {id: nao, label: I don't notice any, risk: 0}
+  - id: q5
+    text: How much water do you have in the dry season?
+    type: single
+    options:
+      - {id: nenhuma, label: "None, rain only", risk: 2,
+         suggestion: "Invest in rainwater harvesting (cisterns, small dams) for the dry months."}
+      - {id: pouca, label: A little (cistern), risk: 1}
+      - {id: media, label: Some (well or reservoir), risk: 0}
+      - {id: irrigacao, label: I have irrigation, risk: 0}
+  - id: q6
+    text: Do you raise animals?
+    type: single
+    options:
+      - {id: gado, label: "Yes, cattle", risk: 0,
+         suggestion: "Forage crops such as sorghum and forage cactus feed the herd through the dry season."}
+      - {id: caprinos, label: "Yes, goats or sheep", risk: 0,
+         suggestion: "Forage cactus is a reliable feed reserve for goats and sheep in dry months."}
+      - {id: pequenos, label: Small animals, risk: 0}
+      - {id: nao, label: "No", risk: 0}
+  - id: q7
+    text: Have you had pests or diseases that come back every year?
+    type: single
+    options:
+      - {id: sempre, label: "Yes, always", risk: 2,
+         suggestion: "Rotate crops from different families to break the pest cycle."}
+      - {id: asvezes, label: Sometimes, risk: 1}
+      - {id: nao, label: "No", risk: 0}
+  - id: q8
+    text: How do you sell your production?
+    type: single
+    options:
+      - {id: proprio, label: Own consumption, risk: 0}
+      - {id: feira, label: Local market, risk: 0}
+      - {id: coop, label: Cooperative or middleman, risk: 0}
+      - {id: contrato, label: Contract or larger market, risk: 0}
+  - id: q9
+    text: How much can you invest to change your practices?
+    type: single
+    options:
+      - {id: nada, label: Nothing right now, risk: 2,
+         suggestion: "Start with low-cost practices: keeping residue on the soil costs almost nothing."}
+      - {id: pouco, label: A little, risk: 1}
+      - {id: moderado, label: A moderate amount, risk: 0}
+      - {id: consigo, label: I can invest, risk: 0}
+  - id: q10
+    text: What matters most to you in the coming years?
+    type: rank
+    options:
+      - {id: agua, label: Saving water, risk: 0}
+      - {id: solo, label: Restoring the soil, risk: 0}
+      - {id: renda, label: Extra income, risk: 0}
+      - {id: animais, label: Feeding the animals, risk: 0}

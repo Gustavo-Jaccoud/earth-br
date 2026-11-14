@@ -44,7 +44,7 @@ def test_suitability_endpoint_ranks_crops(client):
     assert body["source"] == "FAO GAEZ v4" and body["period"] == "1981-2010"
     assert [i["crop"] for i in body["items"]] == ["sorgo", "mandioca", "milho", "feijao",
                                                   "feijao_caupi"]
-    assert body["items"][0] == {"crop": "sorgo", "name": "Sorgo", "suitability": 46.0,
+    assert body["items"][0] == {"crop": "sorgo", "name": "Sorghum", "suitability": 46.0,
                                 "attainable_yield_kg_ha": 1500.0}
     assert body["without_data"] == ["palma"]
 

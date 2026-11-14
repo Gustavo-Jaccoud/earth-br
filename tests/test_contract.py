@@ -4,7 +4,8 @@ from app.models.crops import Crop
 
 EXPECTED_PATHS = {
     "/health", "/farms", "/farms/{farm_id}", "/farms/{farm_id}/plots", "/plots/{plot_id}",
-    "/plots/{plot_id}/climate", "/plots/{plot_id}/signals",
+    "/plots/{plot_id}/climate", "/plots/{plot_id}/climate/monthly",
+    "/plots/{plot_id}/signals",
     "/plots/{plot_id}/satellite/{layer}", "/crops", "/plots/{plot_id}/rotation/compare",
     "/plots/{plot_id}/suitability", "/plots/{plot_id}/dry-years", "/maps/{layer}",
     "/plots/{plot_id}/reports/analysis",

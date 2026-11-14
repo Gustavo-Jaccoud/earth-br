@@ -13,7 +13,7 @@ def get_map_layer(layer: str, request: Request) -> MapLayerIndex:
     """Camada de mapa (PNG mensal + limites) para sobrepor ao mapa do frontend."""
     index_path = request.app.state.settings.data_dir / "maps" / layer / "index.json"
     if layer not in LAYERS or not index_path.exists():
-        raise HTTPException(404, "Camada de mapa não encontrada. Rode o pipeline de mapas.")
+        raise HTTPException(404, "Map layer not found. Run the map pipeline.")
     index = json.loads(index_path.read_text(encoding="utf-8"))
     return MapLayerIndex(
         layer=index["layer"], unit=index["unit"], legend=index["legend"],

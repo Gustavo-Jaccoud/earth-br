@@ -50,7 +50,9 @@ def test_pdf_route_for_analysis_and_quiz(client, tmp_path):
     install_power(client, tmp_path, {"centroid": (-37.05, -10.275)})
     analysis = client.post(f"/plots/{plot['id']}/reports/analysis").json()
     quiz = client.post(f"/plots/{plot['id']}/quiz", json={"answers": {
-        "irrigacao": "nao", "cobertura": "nunca", "cultura": "milho", "seca": "mais_metade"}}
+        "q1": "agua", "q2": "perdi", "q3": "pousio", "q4": ["sulcos"], "q5": "nenhuma",
+        "q6": "nao", "q7": "sempre", "q8": "proprio", "q9": "nada",
+        "q10": ["agua", "solo", "renda", "animais"]}}
     ).json()
     for report_ in (analysis, quiz):
         response = client.get(f"/reports/{report_['id']}/pdf")

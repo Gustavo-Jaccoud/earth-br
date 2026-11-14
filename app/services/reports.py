@@ -18,7 +18,7 @@ def unavailable_section(title: str) -> ReportSection:
 
 
 def condition_section(plot, reference_date, power, rasters,
-                      title: str = "Condição atual") -> ReportSection:
+                      title: str = "Current conditions") -> ReportSection:
     try:
         signals = build_signals(plot, reference_date, power, rasters)
     except (PowerUnavailable, NoDataForDate):
@@ -28,7 +28,7 @@ def condition_section(plot, reference_date, power, rasters,
 
 
 def _rotation(plot, farm, request, power, rasters, gaez) -> ReportSection:
-    title = "Comparação de rotação"
+    title = "Rotation comparison"
     try:
         result = rotation.compare(plot, farm, request, power, rasters, gaez)
     except PowerUnavailable:
@@ -37,17 +37,18 @@ def _rotation(plot, farm, request, power, rasters, gaez) -> ReportSection:
 
 
 def _suitability(plot, gaez) -> ReportSection:
-    title = "Aptidão das culturas"
+    title = "Crop suitability"
     ranking = regional.suitability_ranking(plot, gaez)
     if not ranking.items:
         return unavailable_section(title)
-    items = ", ".join(f"{i.name} ({i.suitability:.0f} de 100)" for i in ranking.items[:TOP_CROPS])
+    items = ", ".join(f"{i.name} ({i.suitability:.0f} out of 100)"
+                      for i in ranking.items[:TOP_CROPS])
     return ReportSection(title=title, text=render("report.suitability", items=items),
                          data=ranking.model_dump(mode="json"))
 
 
 def _dry_years(plot, power) -> ReportSection:
-    title = "Anos secos"
+    title = "Dry years"
     try:
         result = regional.dry_years_report(plot, power)
     except PowerUnavailable:

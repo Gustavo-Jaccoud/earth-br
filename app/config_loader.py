@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel
@@ -49,6 +50,7 @@ class QuizOptionConfig(BaseModel):
 class QuizQuestionConfig(BaseModel):
     id: str
     text: str
+    type: Literal["single", "multi", "rank"] = "single"
     options: list[QuizOptionConfig]
 
 

@@ -54,10 +54,10 @@ def test_soil_bonus_for_restoring_crop(client, tmp_path, plot):
     assert soil[("feijao",)] == pytest.approx(45.0)  # + soil_restoring_bonus (25)
 
 
-def test_verdict_names_the_best_option_in_portuguese(client, plot):
+def test_verdict_names_the_best_option(client, plot):
     body = compare(client, plot).json()
     best = body["options"][0]
-    assert "melhor opção" in body["verdict"]
+    assert "best option" in body["verdict"]
     assert f"{best['total']:.1f}" in body["verdict"]
 
 

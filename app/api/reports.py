@@ -54,7 +54,7 @@ def list_reports(plot_id: int | None = None,
 def get_report(report_id: int, repo: ReportRepository = Depends(get_report_repo)) -> Report:
     report = repo.get(report_id)
     if report is None:
-        raise HTTPException(404, "Relatório não encontrado.")
+        raise HTTPException(404, "Report not found.")
     return report
 
 
@@ -68,7 +68,7 @@ def get_report_pdf(
     """Relatório em PDF, pronto para baixar e compartilhar."""
     report = repo.get(report_id)
     if report is None:
-        raise HTTPException(404, "Relatório não encontrado.")
+        raise HTTPException(404, "Report not found.")
     plot = farms.get_plot(report.plot_id)
     farm = farms.get_farm(plot.farm_id) if plot else None
     return Response(

@@ -29,7 +29,7 @@ RECENT_TIMEOUT = httpx.Timeout(10.0, connect=3.0)  # rede ruim não pode travar 
 FILL_VALUE = -999.0
 
 UNAVAILABLE_MESSAGE = (
-    "Não foi possível obter dados da NASA POWER agora e não há dados salvos para este local."
+    "NASA POWER data could not be fetched right now and there is no saved data for this location."
 )
 
 
@@ -41,7 +41,7 @@ class PowerUnavailable(Exception):
 def last_available_date(df: pd.DataFrame, column: str) -> date:
     valid = df[column].dropna()
     if valid.empty:
-        raise PowerUnavailable("A NASA POWER ainda não tem dados para este local e período.")
+        raise PowerUnavailable("NASA POWER has no data yet for this location and period.")
     return valid.index[-1].date()
 
 

@@ -8,7 +8,7 @@ def test_config_loads():
     assert len(cfg.crops) == 6
     assert sum(cfg.rotation.weights.values()) == pytest.approx(1.0)
     assert cfg.signals.rain.window_days == 30
-    assert len(cfg.quiz.questions) == 4
+    assert len(cfg.quiz.questions) == 10
 
 
 def test_every_crop_kc_nonempty():

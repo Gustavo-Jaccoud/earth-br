@@ -55,6 +55,7 @@ SUMMARIES = {
     ("GET", "/farms/{farm_id}/plots"): "Listar talhões da propriedade",
     ("GET", "/plots/{plot_id}"): "Buscar talhão",
     ("GET", "/plots/{plot_id}/climate"): "Série diária de clima (NASA POWER)",
+    ("GET", "/plots/{plot_id}/climate/monthly"): "Série mensal de clima contra a normal",
     ("GET", "/plots/{plot_id}/signals"): "Semáforos de chuva e umidade do solo",
     ("GET", "/plots/{plot_id}/satellite/{layer}"): "Série de satélite do talhão",
     ("GET", "/crops"): "Listar culturas",

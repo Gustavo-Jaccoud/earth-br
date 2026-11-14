@@ -25,7 +25,7 @@ router = APIRouter(tags=["partida rápida"])
 def get_quiz() -> list[Question]:
     """Perguntas da trilha (sem os pesos de risco e sugestões, que ficam no backend)."""
     return [
-        Question(id=q.id, text=q.text, options=[QuizOption(id=o.id, label=o.label)
+        Question(id=q.id, text=q.text, type=q.type, options=[QuizOption(id=o.id, label=o.label)
                                                 for o in q.options])
         for q in get_config().quiz.questions
     ]

@@ -54,8 +54,13 @@ Série diária da NASA POWER no ponto do talhão (chuva, temperatura, umidade do
 | Rota | O que faz |
 |---|---|
 | `GET /plots/{plot_id}/climate` | Série diária de clima (NASA POWER) |
+| `GET /plots/{plot_id}/climate/monthly` | Série mensal de clima contra a normal |
 
 **`GET /plots/{plot_id}/climate`** — `plot_id` (path, obrigatório, integer), `start` (query, enum), `end` (query, enum)
+
+**`GET /plots/{plot_id}/climate/monthly`** — Rain (monthly total, mm), root-zone soil moisture (%) and air temperature (°C) for the
+last `months` months, each next to the 2001-2020 normal for that calendar month. The current
+month is partial (`complete: false`). Parâmetros: `plot_id` (path, obrigatório, integer), `months` (query, integer).
 
 ## Semáforos
 

@@ -11,11 +11,12 @@ LAST_VALID_DAY = date(2026, 11, 11)  # último dia sem -999 em power_recent.json
 SQUARE = [[-37.05, -10.27], [-37.04, -10.27], [-37.04, -10.26], [-37.05, -10.26], [-37.05, -10.27]]
 
 
-def make_plot(client, ring=None) -> dict:
+def make_plot(client, ring=None, crop=None) -> dict:
     farm = client.post(
         "/farms", json={"name": "Sítio", "municipality": "Aquidabã", "state": "SE"}
     ).json()
-    body = {"name": "Talhão 1", "geometry": {"type": "Polygon", "coordinates": [ring or SQUARE]}}
+    body = {"name": "Talhão 1", "current_crop": crop,
+            "geometry": {"type": "Polygon", "coordinates": [ring or SQUARE]}}
     return client.post(f"/farms/{farm['id']}/plots", json=body).json()
 
 

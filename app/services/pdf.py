@@ -11,7 +11,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from app.models.farms import Farm, Plot
 from app.models.reports import Report
 
-FOOTER = "Fontes: NASA POWER, SMAP, GPM, MODIS; FAO GAEZ. Protótipo Field Shift."
+FOOTER = "Sources: NASA POWER, SMAP, GPM, MODIS; FAO GAEZ. earth + BR prototype."
 MAX_TABLE_ROWS = 10
 MAX_TABLE_COLUMNS = 6
 MAX_CELL_CHARS = 40
@@ -79,7 +79,7 @@ def _footer(canvas, doc) -> None:
     canvas.setFont("Helvetica", 8)
     canvas.setFillColor(GRAY)
     canvas.drawString(2 * cm, 1.2 * cm, printable(FOOTER))
-    canvas.drawRightString(A4[0] - 2 * cm, 1.2 * cm, f"Página {doc.page}")
+    canvas.drawRightString(A4[0] - 2 * cm, 1.2 * cm, f"Page {doc.page}")
     canvas.restoreState()
 
 
@@ -91,11 +91,11 @@ def render_report(report: Report, plot: Plot, farm: Farm | None = None) -> bytes
     body = sheet["BodyText"]
 
     place = f" · {farm.name} · {farm.municipality}/{farm.state}" if farm else ""
-    crop = f" · cultura atual: {plot.current_crop}" if plot.current_crop else ""
+    crop = f" · current crop: {plot.current_crop}" if plot.current_crop else ""
     story = [
         _p(report.title, title),
-        _p(f"Gerado em {report.created_at:%d/%m/%Y %H:%M}", meta),
-        _p(f"Talhão {plot.name} · {plot.area_ha:.1f} ha{crop}{place}", meta),
+        _p(f"Generated on {report.created_at:%Y-%m-%d %H:%M} UTC", meta),
+        _p(f"Field {plot.name} · {plot.area_ha:.1f} ha{crop}{place}", meta),
         Spacer(1, 12),
     ]
     for section in report.sections:

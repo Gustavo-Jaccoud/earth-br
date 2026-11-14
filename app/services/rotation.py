@@ -41,7 +41,7 @@ def compare(plot: Plot, farm: Farm, request: RotationRequest, power: PowerClient
     unknown = sorted({cid for option in request.options for cid in option if cid not in by_id})
     if unknown:
         raise UnknownCrop(
-            f"Cultura desconhecida: {', '.join(unknown)}. Culturas válidas: {', '.join(by_id)}."
+            f"Unknown crop: {', '.join(unknown)}. Valid crops: {', '.join(by_id)}."
         )
 
     lon, lat = plot.centroid
@@ -55,35 +55,35 @@ def compare(plot: Plot, farm: Farm, request: RotationRequest, power: PowerClient
         water_pct = water.water_score(water.sequence_months(crops), clim)
         criteria = [CriterionScore(
             name="water", score=round(water_pct, 1), source="NASA POWER",
-            detail=f"A chuva histórica cobre {water_pct:.0f}% da água que a cultura precisa "
-                   "nos meses de cultivo.")]
+            detail=f"Historical rainfall covers {water_pct:.0f}% of the water the crop needs "
+                   "during the growing months.")]
 
         if ndvi is None:
             criteria.append(CriterionScore(
                 name="soil", score=None, source="NASA MODIS",
-                detail="Sem dado de vigor da vegetação (NDVI) para este talhão: "
-                       "satélite só na região de demonstração."))
+                detail="No vegetation vigor (NDVI) data for this field: satellite data is "
+                       "only available in the demo region."))
         else:
             soil = min(max((ndvi - lo) / (hi - lo), 0.0), 1.0) * 100
             note = ""
             if soil < 50 and any(c.soil_restoring for c in crops):
                 soil = min(100.0, soil + cfg.rotation.soil_restoring_bonus)
-                note = " Inclui bônus por cultura que recupera o solo."
+                note = " Includes a bonus for a soil-restoring crop."
             criteria.append(CriterionScore(
                 name="soil", score=round(soil, 1), source="NASA MODIS",
-                detail=f"NDVI médio recente de {ndvi:.2f}.{note}"))
+                detail=f"Recent average NDVI of {ndvi:.2f}.{note}"))
 
         found = [s for c in crops if (s := gaez.at(c.gaez_name, lat, lon))]
         if found:
             mean = sum(s for s, _ in found) / len(found)
             criteria.append(CriterionScore(
                 name="suitability", score=round(mean, 1), source=GAEZ,
-                detail=f"Aptidão média de {mean:.0f} em 100 para o clima e o solo do local, em "
-                       f"sequeiro ({len(found)} de {len(crops)} culturas com dado)."))
+                detail=f"Average suitability of {mean:.0f} out of 100 for the local climate and "
+                       f"soil, rainfed ({len(found)} of {len(crops)} crops with data)."))
         else:
             criteria.append(CriterionScore(
                 name="suitability", score=None, source=GAEZ,
-                detail="Sem dado de aptidão do GAEZ para estas culturas neste local."))
+                detail="No GAEZ suitability data for these crops at this location."))
 
         usable = [(cfg.rotation.weights[c.name], c.score) for c in criteria if c.score is not None]
         total = sum(w * s for w, s in usable) / sum(w for w, _ in usable)

@@ -9,20 +9,20 @@ METERS_PER_DEGREE = 111_320
 
 def _check_ring(ring: list[tuple[float, float]], what: str) -> None:
     if len(ring) < 4:
-        raise ValueError(f"{what} precisa de pelo menos 4 pontos (o último igual ao primeiro).")
+        raise ValueError(f"{what} needs at least 4 points (the last equal to the first).")
     if ring[0] != ring[-1]:
-        raise ValueError(f"{what} precisa estar fechado: o último ponto igual ao primeiro.")
+        raise ValueError(f"{what} must be closed: the last point must equal the first.")
 
 
 def to_shape(geom: GeoJSONPolygon) -> Polygon:
     """Converte o GeoJSON em polígono shapely; ValueError (em português) se for inválido."""
     rings = geom.coordinates or [[]]  # polígono vazio cai na checagem de "pelo menos 4 pontos"
-    _check_ring(rings[0], "O polígono")
+    _check_ring(rings[0], "The polygon")
     for hole in rings[1:]:
-        _check_ring(hole, "O buraco do polígono")
+        _check_ring(hole, "The polygon hole")
     poly = Polygon(rings[0], holes=rings[1:])
     if not poly.is_valid:
-        raise ValueError("O polígono é inválido: as linhas do contorno se cruzam.")
+        raise ValueError("The polygon is invalid: its outline crosses itself.")
     return poly
 
 

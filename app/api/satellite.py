@@ -14,7 +14,7 @@ from app.services import geometry
 router = APIRouter(tags=["satélite"])
 
 NOT_AVAILABLE = (
-    "Dados de satélite disponíveis apenas para a região de demonstração (Aquidabã/SE)."
+    "Satellite data is only available for the demo region (Aquidabã/SE)."
 )
 
 
@@ -32,7 +32,7 @@ def get_satellite(
     end = end or series.index.max().date()
     start = start or end - timedelta(days=89)
     if start > end:
-        raise HTTPException(422, "A data inicial precisa ser anterior à data final.")
+        raise HTTPException(422, "The start date must be before the end date.")
     series = series[(series.index >= pd.Timestamp(start)) & (series.index <= pd.Timestamp(end))]
     meta = rasters.meta(layer)
     return SatelliteSeries(

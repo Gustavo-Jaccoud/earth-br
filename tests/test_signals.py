@@ -61,7 +61,7 @@ def test_dry_season_absolute_deficit_turns_red():
     series = synthetic(18, 0)
     signal = rain_signal(series, series, NORMAL_YEARS, REFERENCE, cfg, "NASA POWER")
     assert signal.color == "red" and signal.deviation_pct is None
-    assert "18 mm abaixo" in signal.message
+    assert "18 mm below" in signal.message
 
 
 def test_rain_without_data_raises():
@@ -113,7 +113,7 @@ def test_reference_date_without_data_422(client, tmp_path):
     install_power(client, tmp_path, plot)
     response = client.get(f"/plots/{plot['id']}/signals?reference_date=2024-06-30")
     assert response.status_code == 422
-    assert "referência" in response.json()["detail"]
+    assert "reference date" in response.json()["detail"]
 
 
 def test_offline_plot_elsewhere_in_region_uses_the_shared_cache(client, tmp_path):

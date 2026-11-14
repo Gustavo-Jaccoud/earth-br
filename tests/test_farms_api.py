@@ -38,7 +38,7 @@ def test_invalid_polygon_422_and_not_saved(client):
     farm = make_farm(client)
     response = client.post(f"/farms/{farm['id']}/plots", json=plot_body(BOWTIE))
     assert response.status_code == 422
-    assert "inválido" in response.json()["detail"]
+    assert "invalid" in response.json()["detail"]
     assert client.get(f"/farms/{farm['id']}/plots").json() == []
 
 
