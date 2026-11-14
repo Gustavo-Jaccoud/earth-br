@@ -5,7 +5,6 @@ Cada rota real que substitui um exemplo apaga a entrada correspondente daqui.
 from datetime import date, datetime
 
 from app.models.climate import ClimateResponse, ClimateSeries, DailyValue
-from app.models.farms import Farm, GeoJSONPolygon, Plot
 from app.models.maps import LegendItem, MapLayerIndex, MapPeriod
 from app.models.quiz import Question, QuizOption
 from app.models.regional import CausesResponse, CauseYear, LossRanking, LossRankingItem
@@ -13,18 +12,6 @@ from app.models.reports import Report, ReportSection, ReportSummary
 from app.models.rotation import CriterionScore, RotationOptionResult, RotationResponse
 from app.models.satellite import SatelliteSeries
 from app.models.signals import Signal, SignalsResponse
-
-SQUARE = GeoJSONPolygon(
-    type="Polygon",
-    coordinates=[[(-37.05, -10.27), (-37.04, -10.27), (-37.04, -10.26), (-37.05, -10.26),
-                  (-37.05, -10.27)]],
-)
-
-FARM = Farm(id=1, name="Sítio Demonstração", municipality="Aquidabã", state="SE",
-            ibge_code="2800209", owner="Maria da Silva")
-
-PLOT = Plot(id=1, farm_id=1, name="Talhão 1", current_crop="milho", geometry=SQUARE,
-            centroid=(-37.045, -10.265), area_ha=1.2, in_demo_region=True)
 
 _DAYS = [DailyValue(date=date(2026, 11, d), value=v)
          for d, v in [(1, 0.0), (2, 1.2), (3, 0.4), (4, None)]]

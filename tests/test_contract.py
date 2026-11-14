@@ -3,7 +3,6 @@ from pydantic import TypeAdapter
 
 from app.models.climate import ClimateResponse
 from app.models.crops import Crop
-from app.models.farms import Farm, Plot
 from app.models.maps import MapLayerIndex
 from app.models.quiz import Question
 from app.models.regional import CausesResponse, LossRanking
@@ -17,18 +16,10 @@ SQUARE = {
     "coordinates": [[[-37.05, -10.27], [-37.04, -10.27], [-37.04, -10.26], [-37.05, -10.26],
                      [-37.05, -10.27]]],
 }
-FARM_BODY = {"name": "Sítio Demonstração", "municipality": "Aquidabã", "state": "SE"}
-PLOT_BODY = {"name": "Talhão 1", "geometry": SQUARE}
 ROTATION_BODY = {"options": [["milho", "feijao"], ["sorgo", "feijao_caupi"]]}
 
 # (method, path, body, expected status, response type)
 EXAMPLE_ROUTES = [
-    ("POST", "/farms", FARM_BODY, 201, Farm),
-    ("GET", "/farms", None, 200, list[Farm]),
-    ("GET", "/farms/1", None, 200, Farm),
-    ("POST", "/farms/1/plots", PLOT_BODY, 201, Plot),
-    ("GET", "/farms/1/plots", None, 200, list[Plot]),
-    ("GET", "/plots/1", None, 200, Plot),
     ("GET", "/plots/1/climate", None, 200, ClimateResponse),
     ("GET", "/plots/1/signals", None, 200, SignalsResponse),
     ("GET", "/plots/1/satellite/ndvi", None, 200, SatelliteSeries),

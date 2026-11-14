@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,16 +15,28 @@ from app.api import (
     satellite,
     signals,
 )
+from app.db import init_db, make_engine
+from app.repositories.region import load_region
 from app.settings import Settings
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
+    engine = make_engine(settings.var_dir)
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI):
+        init_db(engine, settings.var_dir)
+        yield
+
     app = FastAPI(
+        lifespan=lifespan,
         title="Field Shift API",
         description="Dados da NASA e do IBGE traduzidos para o produtor rural do Nordeste.",
     )
     app.state.settings = settings
+    app.state.engine = engine
+    app.state.region = load_region(settings.data_dir)
     app.add_middleware(
         CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
     )
