@@ -1,6 +1,6 @@
 """Baixa precipitação diária GPM IMERG Final (GPM_3IMERGDF v07) recortada na região, via Harmony.
 
-Uso:  EDL_USERNAME=... EDL_PASSWORD=... python -m pipeline.gpm
+Uso:  EDL_TOKEN=... python -m pipeline.gpm   (ou EDL_USERNAME/EDL_PASSWORD)
 Pede ao Harmony, em blocos de 6 meses, só a bbox da região e junta tudo em
 data/rasters/precipitation.nc (mm/dia).
 
@@ -9,6 +9,7 @@ foi escrito pela documentação do harmony-py, sem teste ao vivo. O produto Fina
 meses (consulte `latest_available`): para datas mais recentes a API usa o NASA POWER.
 Se isto não funcionar dentro do prazo, a API já cai sozinha para o POWER.
 """
+import os
 from datetime import date, datetime, time
 from pathlib import Path
 
@@ -56,7 +57,9 @@ def main(start: date = date(2015, 1, 1), end: date | None = None,
     west, south, east, north = load_bbox(data_dir / "region.json")
     raw = data_dir / "raw" / "gpm"
     raw.mkdir(parents=True, exist_ok=True)
-    client = Client()  # credenciais: EDL_USERNAME/EDL_PASSWORD ou ~/.netrc
+    token = os.environ.get("EDL_TOKEN")  # token do Earthdata Login (alternativa a usuário/senha)
+    # Sem token: EDL_USERNAME/EDL_PASSWORD ou ~/.netrc.
+    client = Client(token=token) if token else Client()
     files: list[Path] = []
     for a, b in date_chunks(start, end):
         request = Request(

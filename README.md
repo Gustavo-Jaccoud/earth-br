@@ -49,6 +49,7 @@ python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
 .venv/bin/uvicorn app.main:app --reload          # API em http://localhost:8000
 .venv/bin/python -m pipeline.seed_demo           # cria a propriedade de demonstração (API rodando)
+# dados do IBGE e de satélite: veja pipeline/README.md
 .venv/bin/pytest                                 # testes
 ```
 
@@ -69,6 +70,29 @@ data/       dados prontos para a API (versionados)
 docs/       arquitetura e decisões
 tests/      testes automatizados
 ```
+
+## Limitações conhecidas
+
+- **Resolução do NASA POWER (~50 km):** talhões vizinhos recebem os mesmos números; o mapa varia
+  entre regiões, não dentro de uma fazenda.
+- **Satélite só na região de demonstração** (Aquidabã/SE). Fora dela, e enquanto o pipeline de
+  satélite não for executado, valem o POWER e o IBGE. O GPM *Final* tem atraso de meses.
+- **Coeficientes de cultura e preços** (`app/config/crops.yaml`) são aproximados e ilustrativos.
+- **Sem previsão do tempo:** as fontes são históricas; o "risco" compara o período recente com a média
+  de 2001–2020.
+- **Comparador de rotação:** uma cultura sem dado no IBGE (palma, feijão-caupi) fica sem o critério
+  "perda regional" e o total é renormalizado, então opções com critérios diferentes não são
+  estritamente comparáveis entre si.
+- **Perda por cultura** é estimada contra o rendimento mediano do território (não é seguro agrícola
+  nem dado oficial de sinistro); o IBGE municipal é grosseiro.
+- **Sem login nem multiusuário**, e o banco é um SQLite local.
+- Banco do Nordeste e Data Sebrae ficaram fora desta versão.
+
+## Próximos passos
+
+Executar o pipeline de satélite (SMAP, MODIS, GPM) e gerar os mapas; ampliar as causas ambientais
+para outros municípios; trocar os modelos de frase por texto gerado por IA (opcional); integrar
+Banco do Nordeste e Data Sebrae; autenticação e várias propriedades por usuário.
 
 Detalhes em [`docs/architecture.md`](docs/architecture.md). Regras (limiares, culturas, frases,
 perguntas da trilha) ficam em `app/config/*.yaml` e podem ser ajustadas sem mexer no código.

@@ -21,18 +21,28 @@ Crie uma conta gratuita em <https://urs.earthdata.nasa.gov> e aprove os aplicati
 ARCHIVE* (para o GPM). Depois:
 
 ```bash
-export EARTHDATA_USERNAME=seu_usuario EARTHDATA_PASSWORD=sua_senha   # AppEEARS
-export EDL_USERNAME=seu_usuario EDL_PASSWORD=sua_senha               # Harmony (GPM)
+export EARTHDATA_USERNAME=seu_usuario EARTHDATA_PASSWORD=sua_senha   # AppEEARS (SMAP, MODIS)
+export EDL_TOKEN=seu_token_do_earthdata                              # Harmony (GPM) — ou:
+export EDL_USERNAME=seu_usuario EDL_PASSWORD=sua_senha               #   usuário e senha
 ```
+
+- O **AppEEARS não aceita o token** do Earthdata Login (testado: 403); ele exige usuário e senha.
+- O **Harmony aceita o token** (Earthdata Login → *Generate Token*).
+- Para o GPM é preciso **aceitar os termos do arquivo GES DISC** em
+  <https://urs.earthdata.nasa.gov/approve_app?client_id=e2WVk8Pw6weeLUKZYOxvTQ>. Sem isso o Harmony
+  falha com `403` e o arquivo responde `EULA Acceptance Failure` (verificado em 2026-11-14).
+- Nunca grave senha ou token em arquivos do repositório.
 
 ## O que foi testado e o que não foi
 
 - **Testado automaticamente:** leitura do SIDRA e cálculo de perdas, contrato dos rasters
   (`layers.py`), geração dos mapas (`render_maps.py`), montagem do pedido ao AppEEARS, máscara de
   valores inválidos, divisão em blocos e conversão do GPM.
-- **NÃO testado ao vivo** (exige conta Earthdata): o login, a tarefa e o download do AppEEARS
-  (`appeears.py`) e o fluxo do Harmony (`gpm.py`). Foram escritos pela documentação das APIs. Se algo
-  falhar, o erro aparece com a mensagem original; ajuste o trecho de rede e rode de novo.
+- **Testado ao vivo, parcialmente:** o `gpm.py` consulta o catálogo (CMR), autentica no Harmony com o
+  token e cria o job; o job falhou só por falta de aceite dos termos do GES DISC (veja acima). Falta
+  ver o download e a conversão com dados reais.
+- **NÃO testado ao vivo:** login, tarefa e download do AppEEARS (`appeears.py`), escritos pela
+  documentação da API. Se algo falhar, o erro aparece com a mensagem original; ajuste e rode de novo.
 - Os tempos de download não foram medidos. O AppEEARS processa a tarefa em fila (minutos a horas) e o
   GPM é baixado em blocos de 6 meses.
 
