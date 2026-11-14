@@ -1,18 +1,19 @@
 # Valores APROXIMADOS, inspirados nos coeficientes de cultura (Kc) da FAO-56.
 # Preços em R$/kg são ILUSTRATIVOS (protótipo) — substituir por fonte oficial (ex.: CONAB).
+# gaez_name: nome da cultura no FAO GAEZ v4 (aptidão e rendimento); null = o GAEZ não cobre.
 # kc: um coeficiente por mês de ciclo, começando em planting_month.
 crops:
-  - {id: milho, name: Milho, ibge_name: "Milho (em grão)", soil_restoring: false,
+  - {id: milho, name: Milho, gaez_name: Maize, soil_restoring: false,
      planting_month: 4, kc: [0.4, 0.8, 1.15, 1.0, 0.6], price_brl_per_kg: 1.2}
-  - {id: feijao, name: Feijão, ibge_name: "Feijão (em grão)", soil_restoring: true,
+  - {id: feijao, name: Feijão, gaez_name: Phaseolus bean, soil_restoring: true,
      planting_month: 4, kc: [0.4, 1.05, 1.0], price_brl_per_kg: 6.0}
-  - {id: feijao_caupi, name: Feijão-caupi, ibge_name: null, soil_restoring: true,
+  - {id: feijao_caupi, name: Feijão-caupi, gaez_name: Cowpea, soil_restoring: true,
      planting_month: 4, kc: [0.4, 1.0, 0.9], price_brl_per_kg: 5.0}
-  - {id: sorgo, name: Sorgo, ibge_name: "Sorgo (em grão)", soil_restoring: false,
+  - {id: sorgo, name: Sorgo, gaez_name: Sorghum, soil_restoring: false,
      planting_month: 4, kc: [0.4, 0.75, 1.0, 0.6], price_brl_per_kg: 1.0}
-  - {id: mandioca, name: Mandioca, ibge_name: "Mandioca", soil_restoring: false,
+  - {id: mandioca, name: Mandioca, gaez_name: Cassava, soil_restoring: false,
      planting_month: 4, kc: [0.3, 0.3, 0.5, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.5, 0.4, 0.3],
      price_brl_per_kg: 0.8}
-  - {id: palma, name: Palma forrageira, ibge_name: null, soil_restoring: false,
+  - {id: palma, name: Palma forrageira, gaez_name: null, soil_restoring: false,
      planting_month: 3, kc: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4],
      price_brl_per_kg: null}

@@ -9,27 +9,15 @@ from app.models.rotation import (
     RotationRequest,
     RotationResponse,
 )
-from app.repositories.ibge import IbgeRepository
+from app.repositories.gaez import SOURCE as GAEZ
+from app.repositories.gaez import GaezRepository
 from app.repositories.rasters import RasterStore
-from app.repositories.region import Region
-from app.services import geometry, losses, water
+from app.services import geometry, water
 from app.services.texts import render
-
-STATE_CODES = {"MA": "21", "PI": "22", "CE": "23", "RN": "24", "PB": "25", "PE": "26",
-               "AL": "27", "SE": "28", "BA": "29"}
 
 
 class UnknownCrop(ValueError):
     pass
-
-
-def territory_codes(plot: Plot, farm: Farm, region: Region) -> tuple[str | None, str | None]:
-    """(código IBGE do município, código da UF) usados para buscar a perda regional."""
-    if farm.ibge_code:
-        return farm.ibge_code, farm.ibge_code[:2]
-    if plot.in_demo_region:
-        return region.ibge_code, region.state_code
-    return None, STATE_CODES.get(farm.state.upper())
 
 
 def _recent_ndvi(rasters: RasterStore | None, plot: Plot, years: int) -> float | None:
@@ -47,8 +35,7 @@ def _label(crops) -> str:
 
 
 def compare(plot: Plot, farm: Farm, request: RotationRequest, power: PowerClient,
-            rasters: RasterStore | None, ibge: IbgeRepository, region: Region
-            ) -> RotationResponse:
+            rasters: RasterStore | None, gaez: GaezRepository) -> RotationResponse:
     cfg = get_config()
     by_id = {c.id: c for c in cfg.crops}
     unknown = sorted({cid for option in request.options for cid in option if cid not in by_id})
@@ -60,7 +47,6 @@ def compare(plot: Plot, farm: Farm, request: RotationRequest, power: PowerClient
     lon, lat = plot.centroid
     clim = water.monthly_climatology(power.history(lat, lon))
     ndvi = _recent_ndvi(rasters, plot, cfg.rotation.ndvi_years)
-    municipality, state = territory_codes(plot, farm, region)
     lo, hi = cfg.rotation.ndvi_range
 
     results = []
@@ -87,18 +73,17 @@ def compare(plot: Plot, farm: Farm, request: RotationRequest, power: PowerClient
                 name="soil", score=round(soil, 1), source="NASA MODIS",
                 detail=f"NDVI médio recente de {ndvi:.2f}.{note}"))
 
-        found = [crop_loss for c in crops if c.ibge_name and (
-            crop_loss := losses.crop_loss_pct(ibge, c.ibge_name, municipality, state))]
+        found = [s for c in crops if (s := gaez.at(c.gaez_name, lat, lon))]
         if found:
-            mean_loss = sum(pct for pct, _ in found) / len(found)
+            mean = sum(s for s, _ in found) / len(found)
             criteria.append(CriterionScore(
-                name="regional_loss", score=round(100 - mean_loss, 1), source="IBGE PAM",
-                detail=f"Perda média de {mean_loss:.0f}% na região ({len(found)} de "
-                       f"{len(crops)} culturas com dado)."))
+                name="suitability", score=round(mean, 1), source=GAEZ,
+                detail=f"Aptidão média de {mean:.0f} em 100 para o clima e o solo do local, em "
+                       f"sequeiro ({len(found)} de {len(crops)} culturas com dado)."))
         else:
             criteria.append(CriterionScore(
-                name="regional_loss", score=None, source="IBGE PAM",
-                detail="Sem dado do IBGE para estas culturas."))
+                name="suitability", score=None, source=GAEZ,
+                detail="Sem dado de aptidão do GAEZ para estas culturas neste local."))
 
         usable = [(cfg.rotation.weights[c.name], c.score) for c in criteria if c.score is not None]
         total = sum(w * s for w, s in usable) / sum(w for w, _ in usable)

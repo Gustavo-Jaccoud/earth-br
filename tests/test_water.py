@@ -49,6 +49,17 @@ def test_water_score_full_coverage():
 
 
 def test_water_score_partial():
-    crop = Crop(id="x", name="X", ibge_name=None, soil_restoring=False, planting_month=4,
+    crop = Crop(id="x", name="X", gaez_name=None, soil_restoring=False, planting_month=4,
                 kc=[1.0, 1.0], price_brl_per_kg=None)
     assert water.water_score(water.sequence_months([crop]), clim(50.0, 100.0)) == 50.0
+
+
+def test_yearly_coverage_shows_the_dry_year():
+    index = pd.date_range("2001-01-01", "2003-12-31")
+    rain = [0.5 if d.year == 2002 else 10.0 for d in index]
+    history = pd.DataFrame({"T2M_MAX": 32.0, "T2M_MIN": 22.0, "T2M": 27.0, "TOA_SW_DWN": 39.5,
+                            "PRECTOTCORR": rain}, index=index)
+    coverage = water.yearly_coverage(water.sequence_months([CROPS["milho"]]), history,
+                                     range(2001, 2004))
+    assert coverage[2001] == 100.0 and coverage[2003] == 100.0
+    assert coverage[2002] < 30

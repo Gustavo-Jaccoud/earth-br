@@ -16,7 +16,7 @@ do campo. Este backend traduz esses dados em **semáforos**, **comparações de 
 
 ## De onde vêm os dados
 
-> **Estado atual:** os semáforos, o comparador e os relatórios usam **NASA POWER** e **IBGE**.
+> **Estado atual:** os semáforos, o comparador e os relatórios usam **NASA POWER** e **FAO GAEZ**.
 > SMAP, GPM e MODIS têm o código de download pronto (`pipeline/`), mas **os arquivos ainda não
 > foram baixados**: não há `data/rasters` nem `data/maps` nesta versão, e as rotas de satélite e de
 > mapa respondem 404 até o pipeline rodar. O AppEEARS (SMAP e MODIS) exige usuário e senha do
@@ -28,7 +28,7 @@ do campo. Este backend traduz esses dados em **semáforos**, **comparações de 
 | NASA SMAP | Umidade do solo (SPL3SMP_E) | Semáforo de umidade e camada de mapa | ~9 km |
 | NASA GPM | Precipitação (IMERG diário) | Semáforo de chuva e camada de mapa | ~10 km |
 | NASA MODIS | Vigor vegetativo (NDVI, MOD13Q1) | Saúde do solo no comparador e camada de mapa | 250 m |
-| IBGE | Produção Agrícola Municipal (SIDRA, tabela 5457) | Perda por cultura, ranking regional | município |
+| FAO GAEZ v4 | Zonas agroecológicas globais (clima 1981–2010, sequeiro, baixo insumo) | Aptidão e rendimento atingível de cada cultura no local | ~9 km |
 
 O **POWER** é consultado ao vivo (com cache em disco, para a demo funcionar sem internet).
 SMAP, GPM e MODIS são baixados **uma vez**, pelo `pipeline/`, para a região de demonstração.
@@ -57,7 +57,7 @@ python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
 .venv/bin/uvicorn app.main:app --reload          # API em http://localhost:8000
 .venv/bin/python -m pipeline.seed_demo           # cria a propriedade de demonstração (API rodando)
-# dados do IBGE e de satélite: veja pipeline/README.md
+# dados do GAEZ e de satélite: veja pipeline/README.md
 .venv/bin/pytest                                 # testes
 ```
 
@@ -77,7 +77,7 @@ Variáveis: `DATA_DIR` (padrão `data`), `VAR_DIR` (padrão `var`, onde fica o b
 
 ```
 app/        API FastAPI (rotas, regras, clientes das fontes, configuração em YAML)
-pipeline/   scripts offline que preparam os dados de satélite e do IBGE
+pipeline/   scripts offline que preparam os dados de satélite e do GAEZ
 data/       dados prontos para a API (versionados)
 docs/       arquitetura e decisões
 tests/      testes automatizados
@@ -92,24 +92,23 @@ tests/      testes automatizados
   responde 422 listando as datas com dado, e `/climate` devolve `null`. Também não há dados antes
   de 2001 no cache.
 - **Satélite só na região de demonstração** (Aquidabã/SE). Fora dela, e enquanto o pipeline de
-  satélite não for executado, valem o POWER e o IBGE. O GPM *Final* tem atraso de meses.
+  satélite não for executado, valem o POWER e o GAEZ. O GPM *Final* tem atraso de meses.
 - **Coeficientes de cultura e preços** (`app/config/crops.yaml`) são aproximados e ilustrativos.
 - **Sem previsão do tempo:** as fontes são históricas; o "risco" compara o período recente com a média
   de 2001–2020.
-- **Comparador de rotação:** uma cultura sem dado no IBGE (palma, feijão-caupi) fica sem o critério
-  "perda regional" e o total é renormalizado, então opções com critérios diferentes não são
+- **Comparador de rotação:** uma cultura sem dado no GAEZ (palma forrageira) fica sem o critério
+  "aptidão" e o total é renormalizado, então opções com critérios diferentes não são
   estritamente comparáveis entre si.
-- **Perda por cultura** é estimada contra o rendimento mediano do território (não é seguro agrícola
-  nem dado oficial de sinistro); o IBGE municipal é grosseiro.
+- **Aptidão (GAEZ) é um modelo de potencial**, não uma medição: não há perdas observadas por
+  cultura nem estatística de produção. O rendimento é em matéria seca e a grade tem ~9 km.
 - **Talhões e relatórios não podem ser apagados ou editados** (só criados e consultados).
 - **Sem login nem multiusuário**, e o banco é um SQLite local.
-- Banco do Nordeste e Data Sebrae ficaram fora desta versão.
 
 ## Próximos passos
 
-Executar o pipeline de satélite (SMAP, MODIS, GPM) e gerar os mapas; ampliar as causas ambientais
-para outros municípios; trocar os modelos de frase por texto gerado por IA (opcional); integrar
-Banco do Nordeste e Data Sebrae; autenticação e várias propriedades por usuário.
+Executar o pipeline de satélite (SMAP, MODIS, GPM) e gerar os mapas; usar o NDVI nos anos secos;
+trocar os modelos de frase por texto gerado por IA (opcional);
+autenticação e várias propriedades por usuário.
 
 Detalhes em [`docs/architecture.md`](docs/architecture.md). Regras (limiares, culturas, frases,
 perguntas da trilha) ficam em `app/config/*.yaml` e podem ser ajustadas sem mexer no código.

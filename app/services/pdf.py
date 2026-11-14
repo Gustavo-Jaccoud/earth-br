@@ -11,7 +11,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from app.models.farms import Farm, Plot
 from app.models.reports import Report
 
-FOOTER = "Fontes: NASA POWER, SMAP, GPM, MODIS; IBGE PAM. Protótipo Field Shift."
+FOOTER = "Fontes: NASA POWER, SMAP, GPM, MODIS; FAO GAEZ. Protótipo Field Shift."
 MAX_TABLE_ROWS = 10
 MAX_TABLE_COLUMNS = 6
 MAX_CELL_CHARS = 40

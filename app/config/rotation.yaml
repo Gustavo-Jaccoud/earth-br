@@ -1,5 +1,5 @@
 # Pesos e parâmetros do comparador de rotação. O time pode ajustar livremente.
-weights: {water: 0.5, soil: 0.2, regional_loss: 0.3}
+weights: {water: 0.5, soil: 0.2, suitability: 0.3}
 ndvi_range: [0.2, 0.7]
 soil_restoring_bonus: 25
 ndvi_years: 3

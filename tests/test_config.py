@@ -19,7 +19,7 @@ def test_phrases_have_required_keys():
     phrases = load_config().phrases
     for key in ["rain.green", "rain.yellow", "rain.red", "rain.dry_season",
                 "soil_moisture.green", "soil_moisture.yellow", "soil_moisture.red",
-                "rotation.verdict", "rotation.no_data", "causes.year", "causes.none",
+                "rotation.verdict", "rotation.no_data", "dry_years.year", "dry_years.none",
                 "quiz.risk.low", "quiz.risk.medium", "quiz.risk.high",
                 "quiz.financial", "quiz.no_financial"]:
         assert key in phrases

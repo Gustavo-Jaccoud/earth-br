@@ -1,33 +1,30 @@
-from typing import Literal
-
 from pydantic import BaseModel
 
 
-class LossRankingItem(BaseModel):
+class SuitabilityItem(BaseModel):
     crop: str
-    mean_loss_pct: float
-    worst_year: int
-    worst_loss_pct: float
-    years: int
+    name: str
+    suitability: float  # 0..100
+    attainable_yield_kg_ha: float  # matéria seca
 
 
-class LossRanking(BaseModel):
-    level: Literal["region", "state", "municipality"]
-    territory_code: str
-    territory_name: str
-    period: tuple[int, int]
+class SuitabilityRanking(BaseModel):
+    plot_id: int
     source: str
-    items: list[LossRankingItem]
+    period: str
+    items: list[SuitabilityItem]
+    without_data: list[str]
 
 
-class CauseYear(BaseModel):
+class DryYear(BaseModel):
     year: int
-    loss_pct: float
-    rain_anomaly_pct: float | None
+    rain_mm: float
+    rain_anomaly_pct: float
 
 
-class CausesResponse(BaseModel):
-    territory_name: str
-    crop: str
-    years: list[CauseYear]
+class DryYearsResponse(BaseModel):
+    plot_id: int
+    source: str
+    rainy_season_months: list[int]
+    years: list[DryYear]
     message: str

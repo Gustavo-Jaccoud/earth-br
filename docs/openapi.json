@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Field Shift API",
-    "description": "\nDados da **NASA** (POWER, SMAP, GPM, MODIS) e do **IBGE** traduzidos para o produtor rural do\nNordeste: semáforos de chuva e umidade do solo, comparação de rotação de culturas, perdas por\ncultura na região e relatórios em linguagem simples.\n\n**Fluxo típico:** cadastrar propriedade → desenhar talhão (polígono) → ver os semáforos →\ncomparar rotações → gerar relatório (e baixar o PDF).\n\n**Convenções:** datas em `AAAA-MM-DD`; coordenadas em `[longitude, latitude]` (GeoJSON, WGS84);\nerros no formato `{\"detail\": \"mensagem em português\"}`. `503` significa que a NASA POWER está\nindisponível e não há dados salvos para o local.\n\nOs dados da NASA têm cerca de 2 dias de atraso: datas de referência mais recentes são ajustadas\nautomaticamente (`reference_date_adjusted`).\n",
+    "description": "\nDados da **NASA** (POWER, SMAP, GPM, MODIS) e da **FAO** (GAEZ) traduzidos para o produtor rural do\nNordeste: semáforos de chuva e umidade do solo, comparação de rotação de culturas, aptidão de cada\ncultura no local e relatórios em linguagem simples.\n\n**Fluxo típico:** cadastrar propriedade → desenhar talhão (polígono) → ver os semáforos →\ncomparar rotações → gerar relatório (e baixar o PDF).\n\n**Convenções:** datas em `AAAA-MM-DD`; coordenadas em `[longitude, latitude]` (GeoJSON, WGS84);\nerros no formato `{\"detail\": \"mensagem em português\"}`. `503` significa que a NASA POWER está\nindisponível e não há dados salvos para o local.\n\nOs dados da NASA têm cerca de 2 dias de atraso: datas de referência mais recentes são ajustadas\nautomaticamente (`reference_date_adjusted`).\n",
     "version": "0.1.0"
   },
   "paths": {
@@ -532,7 +532,7 @@
           "rotação"
         ],
         "summary": "Comparar rotações de culturas",
-        "description": "Compara sequências de culturas (ex.: milho → feijão) para o talhão: risco hídrico (chuva\nhistórica x necessidade da cultura), vigor do solo (NDVI) e perda regional (IBGE).",
+        "description": "Compara sequências de culturas (ex.: milho → feijão) para o talhão: risco hídrico (chuva\nhistórica x necessidade da cultura), vigor do solo (NDVI) e aptidão da cultura no local\n(FAO GAEZ).",
         "operationId": "compare_rotation_plots__plot_id__rotation_compare_post",
         "parameters": [
           {
@@ -579,38 +579,22 @@
         }
       }
     },
-    "/regional/losses": {
+    "/plots/{plot_id}/suitability": {
       "get": {
         "tags": [
-          "panorama regional"
+          "panorama do local"
         ],
-        "summary": "Ranking de perdas por cultura (IBGE)",
-        "description": "Ranking de culturas por perda média (IBGE PAM). Padrão: Nordeste inteiro.",
-        "operationId": "regional_losses_regional_losses_get",
+        "summary": "Aptidão das culturas no local (FAO GAEZ)",
+        "description": "Culturas ordenadas pela aptidão ao clima e solo do local, em sequeiro e com baixo uso de\ninsumos (FAO GAEZ v4, clima 1981-2010), com o rendimento atingível em kg de matéria seca\npor hectare. `without_data` lista as culturas que o GAEZ não cobre neste ponto.",
+        "operationId": "plot_suitability_plots__plot_id__suitability_get",
         "parameters": [
           {
-            "name": "level",
-            "in": "query",
-            "required": false,
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
             "schema": {
-              "enum": [
-                "region",
-                "state",
-                "municipality"
-              ],
-              "type": "string",
-              "default": "region",
-              "title": "Level"
-            }
-          },
-          {
-            "name": "code",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "2",
-              "title": "Code"
+              "type": "integer",
+              "title": "Plot Id"
             }
           }
         ],
@@ -620,7 +604,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LossRanking"
+                  "$ref": "#/components/schemas/SuitabilityRanking"
                 }
               }
             }
@@ -638,23 +622,22 @@
         }
       }
     },
-    "/regional/causes": {
+    "/plots/{plot_id}/dry-years": {
       "get": {
         "tags": [
-          "panorama regional"
+          "panorama do local"
         ],
-        "summary": "Causas ambientais das perdas na região",
-        "description": "Perdas da cultura na região de demonstração, ano a ano, ao lado da anomalia de chuva\nda estação chuvosa (NASA POWER) — mostra quais perdas coincidem com seca.",
-        "operationId": "regional_causes_regional_causes_get",
+        "summary": "Anos secos do local (NASA POWER)",
+        "description": "Chuva da estação chuvosa do local (os 5 meses seguidos mais chuvosos), ano a ano, e o\ndesvio em relação à normal de 2001-2020. Destaca os anos mais secos.",
+        "operationId": "plot_dry_years_plots__plot_id__dry_years_get",
         "parameters": [
           {
-            "name": "crop",
-            "in": "query",
-            "required": false,
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "string",
-              "default": "milho",
-              "title": "Crop"
+              "type": "integer",
+              "title": "Plot Id"
             }
           }
         ],
@@ -664,7 +647,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CausesResponse"
+                  "$ref": "#/components/schemas/DryYearsResponse"
                 }
               }
             }
@@ -731,7 +714,7 @@
           "relatórios"
         ],
         "summary": "Gerar relatório de análise do talhão",
-        "description": "Gera e salva o relatório de análise do talhão (condição atual, rotação opcional,\nperdas na região e causas ambientais).",
+        "description": "Gera e salva o relatório de análise do talhão (condição atual, rotação opcional,\naptidão das culturas e anos secos).",
         "operationId": "create_analysis_report_plots__plot_id__reports_analysis_post",
         "parameters": [
           {
@@ -1029,67 +1012,6 @@
         "type": "object",
         "title": "AnalysisRequest"
       },
-      "CauseYear": {
-        "properties": {
-          "year": {
-            "type": "integer",
-            "title": "Year"
-          },
-          "loss_pct": {
-            "type": "number",
-            "title": "Loss Pct"
-          },
-          "rain_anomaly_pct": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rain Anomaly Pct"
-          }
-        },
-        "type": "object",
-        "required": [
-          "year",
-          "loss_pct",
-          "rain_anomaly_pct"
-        ],
-        "title": "CauseYear"
-      },
-      "CausesResponse": {
-        "properties": {
-          "territory_name": {
-            "type": "string",
-            "title": "Territory Name"
-          },
-          "crop": {
-            "type": "string",
-            "title": "Crop"
-          },
-          "years": {
-            "items": {
-              "$ref": "#/components/schemas/CauseYear"
-            },
-            "type": "array",
-            "title": "Years"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "territory_name",
-          "crop",
-          "years",
-          "message"
-        ],
-        "title": "CausesResponse"
-      },
       "ClimateResponse": {
         "properties": {
           "plot_id": {
@@ -1161,7 +1083,7 @@
             "enum": [
               "water",
               "soil",
-              "regional_loss"
+              "suitability"
             ],
             "title": "Name"
           },
@@ -1204,7 +1126,7 @@
             "type": "string",
             "title": "Name"
           },
-          "ibge_name": {
+          "gaez_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -1213,7 +1135,7 @@
                 "type": "null"
               }
             ],
-            "title": "Ibge Name"
+            "title": "Gaez Name"
           },
           "soil_restoring": {
             "type": "boolean",
@@ -1246,7 +1168,7 @@
         "required": [
           "id",
           "name",
-          "ibge_name",
+          "gaez_name",
           "soil_restoring",
           "planting_month",
           "kc",
@@ -1279,6 +1201,68 @@
           "value"
         ],
         "title": "DailyValue"
+      },
+      "DryYear": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "rain_mm": {
+            "type": "number",
+            "title": "Rain Mm"
+          },
+          "rain_anomaly_pct": {
+            "type": "number",
+            "title": "Rain Anomaly Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "rain_mm",
+          "rain_anomaly_pct"
+        ],
+        "title": "DryYear"
+      },
+      "DryYearsResponse": {
+        "properties": {
+          "plot_id": {
+            "type": "integer",
+            "title": "Plot Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "rainy_season_months": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Rainy Season Months"
+          },
+          "years": {
+            "items": {
+              "$ref": "#/components/schemas/DryYear"
+            },
+            "type": "array",
+            "title": "Years"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plot_id",
+          "source",
+          "rainy_season_months",
+          "years",
+          "message"
+        ],
+        "title": "DryYearsResponse"
       },
       "Farm": {
         "properties": {
@@ -1440,95 +1424,6 @@
           "label"
         ],
         "title": "LegendItem"
-      },
-      "LossRanking": {
-        "properties": {
-          "level": {
-            "type": "string",
-            "enum": [
-              "region",
-              "state",
-              "municipality"
-            ],
-            "title": "Level"
-          },
-          "territory_code": {
-            "type": "string",
-            "title": "Territory Code"
-          },
-          "territory_name": {
-            "type": "string",
-            "title": "Territory Name"
-          },
-          "period": {
-            "prefixItems": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "integer"
-              }
-            ],
-            "type": "array",
-            "maxItems": 2,
-            "minItems": 2,
-            "title": "Period"
-          },
-          "source": {
-            "type": "string",
-            "title": "Source"
-          },
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/LossRankingItem"
-            },
-            "type": "array",
-            "title": "Items"
-          }
-        },
-        "type": "object",
-        "required": [
-          "level",
-          "territory_code",
-          "territory_name",
-          "period",
-          "source",
-          "items"
-        ],
-        "title": "LossRanking"
-      },
-      "LossRankingItem": {
-        "properties": {
-          "crop": {
-            "type": "string",
-            "title": "Crop"
-          },
-          "mean_loss_pct": {
-            "type": "number",
-            "title": "Mean Loss Pct"
-          },
-          "worst_year": {
-            "type": "integer",
-            "title": "Worst Year"
-          },
-          "worst_loss_pct": {
-            "type": "number",
-            "title": "Worst Loss Pct"
-          },
-          "years": {
-            "type": "integer",
-            "title": "Years"
-          }
-        },
-        "type": "object",
-        "required": [
-          "crop",
-          "mean_loss_pct",
-          "worst_year",
-          "worst_loss_pct",
-          "years"
-        ],
-        "title": "LossRankingItem"
       },
       "MapLayerIndex": {
         "properties": {
@@ -2077,6 +1972,73 @@
         ],
         "title": "SignalsResponse"
       },
+      "SuitabilityItem": {
+        "properties": {
+          "crop": {
+            "type": "string",
+            "title": "Crop"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "suitability": {
+            "type": "number",
+            "title": "Suitability"
+          },
+          "attainable_yield_kg_ha": {
+            "type": "number",
+            "title": "Attainable Yield Kg Ha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "crop",
+          "name",
+          "suitability",
+          "attainable_yield_kg_ha"
+        ],
+        "title": "SuitabilityItem"
+      },
+      "SuitabilityRanking": {
+        "properties": {
+          "plot_id": {
+            "type": "integer",
+            "title": "Plot Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SuitabilityItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "without_data": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Without Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plot_id",
+          "source",
+          "period",
+          "items",
+          "without_data"
+        ],
+        "title": "SuitabilityRanking"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -2146,11 +2108,11 @@
     },
     {
       "name": "rotação",
-      "description": "Comparador de rotação de culturas: risco hídrico, vigor do solo e perda regional."
+      "description": "Comparador de rotação de culturas: risco hídrico, vigor do solo e aptidão da cultura no local."
     },
     {
-      "name": "panorama regional",
-      "description": "Ranking de culturas com maior perda no Nordeste (IBGE) e causas ambientais na região de demonstração."
+      "name": "panorama do local",
+      "description": "Aptidão de cada cultura no local (FAO GAEZ) e histórico de anos secos (NASA POWER)."
     },
     {
       "name": "mapa",

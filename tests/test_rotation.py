@@ -31,17 +31,17 @@ def test_compare_ranks_and_renormalizes_without_ndvi(client, plot):
         assert s["water"]["score"] is not None and s["water"]["source"] == "NASA POWER"
     milho = next(o for o in body["options"] if o["crops"] == ["milho", "feijao"])
     s = scores(milho)
-    assert s["regional_loss"]["score"] is not None and s["regional_loss"]["source"] == "IBGE PAM"
-    expected = (0.5 * s["water"]["score"] + 0.3 * s["regional_loss"]["score"]) / 0.8
+    assert s["suitability"]["score"] == 35.5 and s["suitability"]["source"] == "FAO GAEZ v4"
+    expected = (0.5 * s["water"]["score"] + 0.3 * s["suitability"]["score"]) / 0.8
     assert milho["total"] == pytest.approx(expected, abs=0.1)  # pesos renormalizados sem 'soil'
 
 
-def test_crop_without_ibge_data_is_no_data_and_leaves_the_score(client, plot):
-    body = compare(client, plot).json()
-    caupi = next(o for o in body["options"] if o["crops"] == ["sorgo", "feijao_caupi"])
-    s = scores(caupi)
-    assert s["regional_loss"]["score"] is None
-    assert caupi["total"] == pytest.approx(s["water"]["score"], abs=0.1)  # só 'water' sobra
+def test_crop_without_gaez_data_is_no_data_and_leaves_the_score(client, plot):
+    body = compare(client, plot, {"options": [["milho"], ["palma"]]}).json()
+    palma = next(o for o in body["options"] if o["crops"] == ["palma"])
+    s = scores(palma)
+    assert s["suitability"]["score"] is None
+    assert palma["total"] == pytest.approx(s["water"]["score"], abs=0.1)  # só 'water' sobra
 
 
 def test_soil_bonus_for_restoring_crop(client, tmp_path, plot):

@@ -1,12 +1,11 @@
-from app.clients.power import PowerClient
+from app.clients.power import PowerClient, PowerUnavailable
 from app.config_loader import QuizConfig, get_config
-from app.models.farms import Farm, Plot
+from app.models.farms import Plot
 from app.models.quiz import QuizAnswers
 from app.models.reports import ReportSection
-from app.repositories.ibge import IbgeRepository
+from app.repositories.gaez import GaezRepository
 from app.repositories.rasters import RasterStore
-from app.repositories.region import Region
-from app.services import losses, reports, rotation
+from app.services import reports, water
 from app.services.texts import render
 
 MEDIUM_FROM, HIGH_FROM = 34, 67
@@ -50,31 +49,35 @@ def _suggestions(answers: dict[str, str], quiz: QuizConfig) -> list[str]:
     return found
 
 
-def _financial(plot: Plot, farm: Farm, answers: dict[str, str], ibge: IbgeRepository,
-               region: Region) -> ReportSection:
+def _financial(plot: Plot, answers: dict[str, str], power: PowerClient,
+               gaez: GaezRepository) -> ReportSection:
+    """Perda média por ano por falta de água: área × rendimento atingível (GAEZ) × fração da
+    necessidade de água que a chuva não cobriu, na média de 2001-2020 (POWER) × preço."""
     title = "Impacto financeiro"
     crop = next((c for c in get_config().crops if c.id == answers.get("cultura")), None)
-    estimate = None
-    if crop and crop.ibge_name and crop.price_brl_per_kg:
-        municipality, state = rotation.territory_codes(plot, farm, region)
-        loss = losses.crop_loss_pct(ibge, crop.ibge_name, municipality, state)
-        yield_kg = losses.crop_median_yield(ibge, crop.ibge_name, municipality, state)
-        if loss and yield_kg:
-            estimate = plot.area_ha * yield_kg * (loss[0] / 100) * crop.price_brl_per_kg
-    if estimate is None:
+    lon, lat = plot.centroid
+    found = gaez.at(crop.gaez_name, lat, lon) if crop else None
+    if not (crop and crop.price_brl_per_kg and found):
         return ReportSection(title=title, text=render("quiz.no_financial"), data={})
+    try:
+        history = power.history(lat, lon)
+    except PowerUnavailable:
+        return ReportSection(title=title, text=render("quiz.no_financial"), data={})
+    by_year = water.yearly_coverage(water.sequence_months([crop]), history)
+    coverage = sum(by_year.values()) / len(by_year)
+    estimate = plot.area_ha * found[1] * (1 - coverage / 100) * crop.price_brl_per_kg
     value = f"{estimate:,.0f}".replace(",", ".")
     return ReportSection(
         title=title,
         text=render("quiz.financial", value=value, area=f"{plot.area_ha:.1f}",
                     crop=crop.name.lower()),
         data={"estimated_loss_brl_per_year": round(estimate), "crop": crop.id,
-              "mean_loss_pct": loss[0], "loss_level": loss[1]},
+              "attainable_yield_kg_ha": found[1], "water_coverage_pct": round(coverage, 1)},
     )
 
 
-def evaluate(plot: Plot, farm: Farm, answers: QuizAnswers, power: PowerClient,
-             rasters: RasterStore, ibge: IbgeRepository, region: Region) -> list[ReportSection]:
+def evaluate(plot: Plot, answers: QuizAnswers, power: PowerClient, rasters: RasterStore,
+             gaez: GaezRepository) -> list[ReportSection]:
     quiz = get_config().quiz
     validate(answers.answers, quiz)
     risk, level = _risk(answers.answers, quiz)
@@ -83,7 +86,7 @@ def evaluate(plot: Plot, farm: Farm, answers: QuizAnswers, power: PowerClient,
         ReportSection(title="Risco", text=render(f"quiz.risk.{level}", risk=risk),
                       data={"risk": risk, "level": level, "answers": answers.answers}),
         reports.condition_section(plot, None, power, rasters, title="Impacto ambiental"),
-        _financial(plot, farm, answers.answers, ibge, region),
+        _financial(plot, answers.answers, power, gaez),
         ReportSection(
             title="Sugestões",
             text="\n".join(f"• {s}" for s in suggestions) or render("quiz.no_suggestions"),

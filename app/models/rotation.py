@@ -10,7 +10,7 @@ class RotationRequest(BaseModel):
 
 
 class CriterionScore(BaseModel):
-    name: Literal["water", "soil", "regional_loss"]
+    name: Literal["water", "soil", "suitability"]
     score: float | None
     source: str
     detail: str

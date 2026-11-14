@@ -7,7 +7,7 @@ API lê. Instalação das dependências extras: `.venv/bin/pip install -e ".[pip
 
 | # | Comando | O que faz | Precisa de conta Earthdata? |
 |---|---|---|---|
-| 1 | `python -m pipeline.ibge_pam` | Baixa a Produção Agrícola Municipal do IBGE (2010–2023) → `data/ibge/pam.csv` | não |
+| 1 | `python -m pipeline.gaez` | Baixa aptidão e rendimento atingível por cultura do FAO GAEZ v4 e recorta o Nordeste → `data/gaez/gaez.nc` | não |
 | 2 | `python -m pipeline.seed_demo` (com a API rodando) | Cria a propriedade de demonstração e guarda em cache os dados do NASA POWER | não |
 | 3 | `python -m pipeline.appeears` | NDVI (MODIS) e umidade do solo (SMAP) → `data/rasters/{ndvi,soil_moisture}.nc` | **sim** |
 | 4 | `python -m pipeline.gpm` | Chuva diária (GPM IMERG) → `data/rasters/precipitation.nc` | **sim** |
@@ -35,7 +35,7 @@ export EDL_USERNAME=seu_usuario EDL_PASSWORD=sua_senha               #   usuári
 
 ## O que foi testado e o que não foi
 
-- **Testado automaticamente:** leitura do SIDRA e cálculo de perdas, contrato dos rasters
+- **Testado automaticamente:** recorte e leitura do GAEZ, cálculo de anos secos, contrato dos rasters
   (`layers.py`), geração dos mapas (`render_maps.py`), montagem do pedido ao AppEEARS, máscara de
   valores inválidos, divisão em blocos e conversão do GPM.
 - **Testado ao vivo, parcialmente:** o `gpm.py` consulta o catálogo (CMR), autentica no Harmony com o

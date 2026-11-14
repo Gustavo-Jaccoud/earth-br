@@ -2,9 +2,9 @@
 from fastapi import FastAPI
 
 DESCRIPTION = """
-Dados da **NASA** (POWER, SMAP, GPM, MODIS) e do **IBGE** traduzidos para o produtor rural do
-Nordeste: semáforos de chuva e umidade do solo, comparação de rotação de culturas, perdas por
-cultura na região e relatórios em linguagem simples.
+Dados da **NASA** (POWER, SMAP, GPM, MODIS) e da **FAO** (GAEZ) traduzidos para o produtor rural do
+Nordeste: semáforos de chuva e umidade do solo, comparação de rotação de culturas, aptidão de cada
+cultura no local e relatórios em linguagem simples.
 
 **Fluxo típico:** cadastrar propriedade → desenhar talhão (polígono) → ver os semáforos →
 comparar rotações → gerar relatório (e baixar o PDF).
@@ -32,11 +32,11 @@ TAGS = [
                     "Disponível só na região de demonstração (Aquidabã/SE)."},
     {"name": "culturas", "description": "Culturas conhecidas pelo comparador e seus parâmetros."},
     {"name": "rotação",
-     "description": "Comparador de rotação de culturas: risco hídrico, vigor do solo e perda "
-                    "regional."},
-    {"name": "panorama regional",
-     "description": "Ranking de culturas com maior perda no Nordeste (IBGE) e causas "
-                    "ambientais na região de demonstração."},
+     "description": "Comparador de rotação de culturas: risco hídrico, vigor do solo e "
+                    "aptidão da cultura no local."},
+    {"name": "panorama do local",
+     "description": "Aptidão de cada cultura no local (FAO GAEZ) e histórico de anos secos "
+                    "(NASA POWER)."},
     {"name": "mapa",
      "description": "Camadas de mapa (imagens mensais com limites) para sobrepor ao mapa."},
     {"name": "relatórios",
@@ -59,8 +59,8 @@ SUMMARIES = {
     ("GET", "/plots/{plot_id}/satellite/{layer}"): "Série de satélite do talhão",
     ("GET", "/crops"): "Listar culturas",
     ("POST", "/plots/{plot_id}/rotation/compare"): "Comparar rotações de culturas",
-    ("GET", "/regional/losses"): "Ranking de perdas por cultura (IBGE)",
-    ("GET", "/regional/causes"): "Causas ambientais das perdas na região",
+    ("GET", "/plots/{plot_id}/suitability"): "Aptidão das culturas no local (FAO GAEZ)",
+    ("GET", "/plots/{plot_id}/dry-years"): "Anos secos do local (NASA POWER)",
     ("GET", "/maps/{layer}"): "Camada de mapa (imagens mensais e limites)",
     ("POST", "/plots/{plot_id}/reports/analysis"): "Gerar relatório de análise do talhão",
     ("GET", "/reports"): "Listar relatórios",

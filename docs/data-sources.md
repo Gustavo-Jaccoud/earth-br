@@ -6,9 +6,9 @@
 | NASA SMAP | SPL3SMP_E v006 (L3 enhanced, 9 km) | `Soil_Moisture_Retrieval_Data_AM_soil_moisture` (m³/m³, faixa válida 0,02–0,5) | 9 km | 2015 em diante | <https://nsidc.org/data/spl3smp_e/versions/6> |
 | NASA GPM | IMERG Final diário, GPM_3IMERGDF v07 | `precipitation` (mm/dia) | 0,1° (~10 km) | 1998 em diante, com atraso de meses | <https://gpm.nasa.gov/data/imerg> |
 | NASA MODIS | MOD13Q1 v061 (composto de 16 dias) | `_250m_16_days_NDVI` (faixa válida −0,2 a 1,0) | 250 m | 2000 em diante | <https://lpdaac.usgs.gov/products/mod13q1v061/> |
-| IBGE | Produção Agrícola Municipal (SIDRA, tabela 5457) | área plantada (8331), área colhida (216), produção (214), rendimento (112) | município | anual, 2010–2023 usados | <https://sidra.ibge.gov.br/tabela/5457> |
+| FAO | GAEZ v4, tema 4 (aptidão e rendimento atingível), clima 1981–2010 (CRUTS32), sequeiro, baixo insumo | índice de aptidão (0–10000, toda a terra da célula) e rendimento atingível da melhor classe (kg de matéria seca/ha), para milho, feijão, feijão-caupi, sorgo e mandioca | 5 min de arco (~9 km) | média de 30 anos | <https://gaez.fao.org> |
 
-**Acesso:** POWER e SIDRA são abertos, sem chave. SMAP e MODIS vêm pelo
+**Acesso:** POWER e GAEZ são abertos, sem chave. SMAP e MODIS vêm pelo
 [AppEEARS](https://appeears.earthdatacloud.nasa.gov); o GPM, pelo serviço Harmony da NASA. Ambos
 exigem conta gratuita no [Earthdata Login](https://urs.earthdata.nasa.gov).
 
@@ -19,15 +19,14 @@ exigem conta gratuita no [Earthdata Login](https://urs.earthdata.nasa.gov).
   menos 5 anos de histórico; senão, o POWER (2001–2020 como normal climatológica).
 - **Comparador de rotação:** chuva mensal histórica do POWER contra a necessidade de água da cultura
   (coeficiente de cultura × evapotranspiração de Hargreaves-Samani, calculada com temperaturas e
-  radiação do POWER); NDVI do MODIS para o vigor do solo; perda da cultura pelo IBGE.
-- **Perda por cultura (IBGE):** `1 − produção / (área plantada × rendimento mediano da cultura no
-  território)`, limitada entre 0 e 1. Mede quanto da produção esperada se perdeu em cada ano, e por
-  isso destaca as secas (2012, 2016).
+  radiação do POWER); NDVI do MODIS para o vigor do solo; aptidão da cultura pelo GAEZ.
+- **Anos secos (POWER):** chuva dos 5 meses seguidos mais chuvosos do local, ano a ano, contra a
+  normal de 2001–2020. Destaca as secas (2012, 2016, 2018 em Aquidabã).
 
 ## Limitações
 
 - O POWER tem ~50 km de resolução: talhões vizinhos recebem os mesmos números.
 - Satélite só existe para a região de demonstração (Aquidabã/SE); fora dela vale o POWER.
 - Coeficientes de cultura e preços em `app/config/crops.yaml` são aproximados e ilustrativos.
-- Culturas sem dado no IBGE (palma forrageira, feijão-caupi) aparecem como "sem dado" na perda
-  regional e não entram na pontuação.
+- A palma forrageira não existe no GAEZ: aparece como "sem dado" na aptidão
+  e não entra nesse critério da pontuação.

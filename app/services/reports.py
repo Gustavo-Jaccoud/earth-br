@@ -1,19 +1,16 @@
 from datetime import date
 
 from app.clients.power import PowerClient, PowerUnavailable
-from app.config_loader import get_config
 from app.models.farms import Farm, Plot
 from app.models.reports import ReportSection
 from app.models.rotation import RotationRequest
-from app.repositories.ibge import IbgeRepository
+from app.repositories.gaez import GaezRepository
 from app.repositories.rasters import RasterStore
-from app.repositories.region import Region
-from app.services import causes, losses, rotation
+from app.services import regional, rotation
 from app.services.signals import NoDataForDate, build_signals
 from app.services.texts import render
 
-TOP_LOSSES = 5
-DEFAULT_CAUSES_CROP = "milho"
+TOP_CROPS = 5
 
 
 def unavailable_section(title: str) -> ReportSection:
@@ -30,51 +27,43 @@ def condition_section(plot, reference_date, power, rasters,
                          data=signals.model_dump(mode="json"))
 
 
-def _rotation(plot, farm, request, power, rasters, ibge, region) -> ReportSection:
+def _rotation(plot, farm, request, power, rasters, gaez) -> ReportSection:
     title = "Comparação de rotação"
     try:
-        result = rotation.compare(plot, farm, request, power, rasters, ibge, region)
+        result = rotation.compare(plot, farm, request, power, rasters, gaez)
     except PowerUnavailable:
         return unavailable_section(title)
     return ReportSection(title=title, text=result.verdict, data=result.model_dump(mode="json"))
 
 
-def _regional_losses(plot, farm, ibge, region) -> ReportSection:
-    title = "Perdas na região"
-    _, state = rotation.territory_codes(plot, farm, region)
-    rows = ibge.rows("state", state) if state else None
-    if rows is None or rows.empty:
+def _suitability(plot, gaez) -> ReportSection:
+    title = "Aptidão das culturas"
+    ranking = regional.suitability_ranking(plot, gaez)
+    if not ranking.items:
         return unavailable_section(title)
-    items = losses.ranking(rows, min_mean_planted_ha=losses.MIN_PLANTED_HA["state"])[:TOP_LOSSES]
-    text = render("report.losses", territory=ibge.territory_name("state", state),
-                  items=", ".join(f"{i.crop} ({i.mean_loss_pct:.0f}%)" for i in items))
-    return ReportSection(title=title, text=text,
-                         data={"items": [i.model_dump() for i in items]})
+    items = ", ".join(f"{i.name} ({i.suitability:.0f} de 100)" for i in ranking.items[:TOP_CROPS])
+    return ReportSection(title=title, text=render("report.suitability", items=items),
+                         data=ranking.model_dump(mode="json"))
 
 
-def _causes(plot, ibge, power, region) -> ReportSection:
-    title = "Causas ambientais"
-    crops = {c.id: c for c in get_config().crops}
-    crop_id = plot.current_crop if (
-        plot.current_crop in crops and crops[plot.current_crop].ibge_name) else DEFAULT_CAUSES_CROP
+def _dry_years(plot, power) -> ReportSection:
+    title = "Anos secos"
     try:
-        result = causes.explain(crop_id, ibge, power, region)
-    except (PowerUnavailable, causes.NoLossData):
+        result = regional.dry_years_report(plot, power)
+    except PowerUnavailable:
         return unavailable_section(title)
     return ReportSection(title=title, text=result.message, data=result.model_dump(mode="json"))
 
 
 def build_analysis(plot: Plot, farm: Farm, reference_date: date | None,
                    rotation_request: RotationRequest | None, power: PowerClient,
-                   rasters: RasterStore, ibge: IbgeRepository, region: Region
-                   ) -> list[ReportSection]:
+                   rasters: RasterStore, gaez: GaezRepository) -> list[ReportSection]:
     """Seções do relatório de análise. Uma fonte que falha vira "Dado indisponível no momento."
     na própria seção, sem derrubar o relatório. Cultura desconhecida na rotação (erro do
     cliente) sobe como UnknownCrop."""
     sections = [condition_section(plot, reference_date, power, rasters)]
     if rotation_request is not None:
-        sections.append(_rotation(plot, farm, rotation_request, power, rasters, ibge, region))
-    sections.append(_regional_losses(plot, farm, ibge, region))
-    if plot.in_demo_region:
-        sections.append(_causes(plot, ibge, power, region))
+        sections.append(_rotation(plot, farm, rotation_request, power, rasters, gaez))
+    sections.append(_suitability(plot, gaez))
+    sections.append(_dry_years(plot, power))
     return sections

@@ -6,7 +6,7 @@ from sqlmodel import Session
 from app.clients.power import PowerClient
 from app.models.farms import Farm, Plot
 from app.repositories.farms import FarmRepository
-from app.repositories.ibge import IbgeRepository
+from app.repositories.gaez import GaezRepository
 from app.repositories.rasters import RasterStore
 from app.repositories.region import Region
 from app.repositories.reports import ReportRepository
@@ -25,8 +25,8 @@ def get_rasters(request: Request) -> RasterStore:
     return request.app.state.rasters
 
 
-def get_ibge(request: Request) -> IbgeRepository:
-    return request.app.state.ibge
+def get_gaez(request: Request) -> GaezRepository:
+    return request.app.state.gaez
 
 
 def get_report_repo(session: Session = Depends(get_session)) -> ReportRepository:

@@ -4,9 +4,9 @@ Documentação interativa (com botão **Try it out**): rode a API e abra **http:
 
 > Gerado por `python -m app.export_openapi` — não edite à mão.
 
-Dados da **NASA** (POWER, SMAP, GPM, MODIS) e do **IBGE** traduzidos para o produtor rural do
-Nordeste: semáforos de chuva e umidade do solo, comparação de rotação de culturas, perdas por
-cultura na região e relatórios em linguagem simples.
+Dados da **NASA** (POWER, SMAP, GPM, MODIS) e da **FAO** (GAEZ) traduzidos para o produtor rural do
+Nordeste: semáforos de chuva e umidade do solo, comparação de rotação de culturas, aptidão de cada
+cultura no local e relatórios em linguagem simples.
 
 **Fluxo típico:** cadastrar propriedade → desenhar talhão (polígono) → ver os semáforos →
 comparar rotações → gerar relatório (e baixar o PDF).
@@ -88,28 +88,31 @@ Culturas conhecidas pelo comparador e seus parâmetros.
 
 ## Rotação
 
-Comparador de rotação de culturas: risco hídrico, vigor do solo e perda regional.
+Comparador de rotação de culturas: risco hídrico, vigor do solo e aptidão da cultura no local.
 
 | Rota | O que faz |
 |---|---|
 | `POST /plots/{plot_id}/rotation/compare` | Comparar rotações de culturas |
 
 **`POST /plots/{plot_id}/rotation/compare`** — Compara sequências de culturas (ex.: milho → feijão) para o talhão: risco hídrico (chuva
-histórica x necessidade da cultura), vigor do solo (NDVI) e perda regional (IBGE). Parâmetros: `plot_id` (path, obrigatório, integer).
+histórica x necessidade da cultura), vigor do solo (NDVI) e aptidão da cultura no local
+(FAO GAEZ). Parâmetros: `plot_id` (path, obrigatório, integer).
 
-## Panorama regional
+## Panorama do local
 
-Ranking de culturas com maior perda no Nordeste (IBGE) e causas ambientais na região de demonstração.
+Aptidão de cada cultura no local (FAO GAEZ) e histórico de anos secos (NASA POWER).
 
 | Rota | O que faz |
 |---|---|
-| `GET /regional/losses` | Ranking de perdas por cultura (IBGE) |
-| `GET /regional/causes` | Causas ambientais das perdas na região |
+| `GET /plots/{plot_id}/suitability` | Aptidão das culturas no local (FAO GAEZ) |
+| `GET /plots/{plot_id}/dry-years` | Anos secos do local (NASA POWER) |
 
-**`GET /regional/losses`** — Ranking de culturas por perda média (IBGE PAM). Padrão: Nordeste inteiro. Parâmetros: `level` (query, string), `code` (query, string).
+**`GET /plots/{plot_id}/suitability`** — Culturas ordenadas pela aptidão ao clima e solo do local, em sequeiro e com baixo uso de
+insumos (FAO GAEZ v4, clima 1981-2010), com o rendimento atingível em kg de matéria seca
+por hectare. `without_data` lista as culturas que o GAEZ não cobre neste ponto. Parâmetros: `plot_id` (path, obrigatório, integer).
 
-**`GET /regional/causes`** — Perdas da cultura na região de demonstração, ano a ano, ao lado da anomalia de chuva
-da estação chuvosa (NASA POWER) — mostra quais perdas coincidem com seca. Parâmetros: `crop` (query, string).
+**`GET /plots/{plot_id}/dry-years`** — Chuva da estação chuvosa do local (os 5 meses seguidos mais chuvosos), ano a ano, e o
+desvio em relação à normal de 2001-2020. Destaca os anos mais secos. Parâmetros: `plot_id` (path, obrigatório, integer).
 
 ## Mapa
 
@@ -133,7 +136,7 @@ Relatórios de análise salvos, com exportação em PDF.
 | `GET /reports/{report_id}/pdf` | Baixar relatório em PDF |
 
 **`POST /plots/{plot_id}/reports/analysis`** — Gera e salva o relatório de análise do talhão (condição atual, rotação opcional,
-perdas na região e causas ambientais). Parâmetros: `plot_id` (path, obrigatório, integer).
+aptidão das culturas e anos secos). Parâmetros: `plot_id` (path, obrigatório, integer).
 
 **`GET /reports`** — `plot_id` (query, enum)
 

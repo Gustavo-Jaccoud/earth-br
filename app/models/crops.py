@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class Crop(BaseModel):
     id: str
     name: str
-    ibge_name: str | None
+    gaez_name: str | None  # nome da cultura no FAO GAEZ; None = sem dado de aptidão
     soil_restoring: bool
     planting_month: int
     kc: list[float]

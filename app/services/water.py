@@ -46,3 +46,15 @@ def water_score(seq: list[tuple[Crop, int, float]], clim: pd.DataFrame) -> float
         demand = kc * clim.loc[month, "et0_mm"]
         ratios.append(1.0 if demand <= 0 else min(1.0, clim.loc[month, "rain_mm"] / demand))
     return 100 * sum(ratios) / len(ratios)
+
+
+def yearly_coverage(seq: list[tuple[Crop, int, float]], history: pd.DataFrame,
+                    years: Iterable[int] = range(2001, 2021)) -> dict[int, float]:
+    """water_score (0..100) calculado com a chuva e a ET0 de cada ano, em vez da média. Mostra
+    os anos em que faltou água, que a média esconde."""
+    out = {}
+    for year in years:
+        one = history[history.index.year == year]
+        if len(one) >= 360:
+            out[year] = water_score(seq, monthly_climatology(one, [year]))
+    return out
