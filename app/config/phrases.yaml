@@ -1,6 +1,6 @@
 # Modelos de frase em português. Quem usa passa os números já formatados.
 # {deviation} é sempre uma magnitude positiva ("60%" ou "15 mm"): a frase já diz "abaixo".
-rain.green: "Choveu {value} mm nos últimos {days} dias, perto da média da região ({normal} mm). Situação tranquila para a lavoura."
+rain.green: "Choveu {value} mm nos últimos {days} dias (média da região: {normal} mm). Sem alerta de falta de chuva."
 rain.yellow: "Choveu {value} mm nos últimos {days} dias, {deviation} abaixo da média ({normal} mm). Fique atento: a lavoura pode sentir falta de água."
 rain.red: "Choveu {value} mm nos últimos {days} dias, {deviation} abaixo da média ({normal} mm). Risco alto para a lavoura."
 rain.dry_season: "Período normalmente seco: choveu {value} mm nos últimos {days} dias (média de {normal} mm). Sem alerta de falta de chuva."
