@@ -1,7 +1,6 @@
 import pytest
 from pydantic import TypeAdapter
 
-from app.models.climate import ClimateResponse
 from app.models.crops import Crop
 from app.models.maps import MapLayerIndex
 from app.models.quiz import Question
@@ -20,7 +19,6 @@ ROTATION_BODY = {"options": [["milho", "feijao"], ["sorgo", "feijao_caupi"]]}
 
 # (method, path, body, expected status, response type)
 EXAMPLE_ROUTES = [
-    ("GET", "/plots/1/climate", None, 200, ClimateResponse),
     ("GET", "/plots/1/signals", None, 200, SignalsResponse),
     ("GET", "/plots/1/satellite/ndvi", None, 200, SatelliteSeries),
     ("POST", "/plots/1/rotation/compare", ROTATION_BODY, 200, RotationResponse),

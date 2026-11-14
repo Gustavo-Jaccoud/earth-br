@@ -3,14 +3,19 @@ from collections.abc import Iterator
 from fastapi import Depends, HTTPException, Request
 from sqlmodel import Session
 
+from app.clients.power import PowerClient
 from app.models.farms import Farm, Plot
 from app.repositories.farms import FarmRepository
-from app.repositories.region import Region, load_region
+from app.repositories.region import Region
 
 
 def get_session(request: Request) -> Iterator[Session]:
     with Session(request.app.state.engine) as session:
         yield session
+
+
+def get_power_client(request: Request) -> PowerClient:
+    return request.app.state.power
 
 
 def get_region(request: Request) -> Region:
@@ -36,6 +41,3 @@ def get_plot_or_404(plot_id: int, repo: FarmRepository = Depends(get_farm_repo))
         raise HTTPException(404, "Talhão não encontrado.")
     return plot
 
-
-__all__ = ["get_session", "get_region", "get_farm_repo", "get_farm_or_404", "get_plot_or_404",
-           "load_region"]

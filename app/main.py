@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api import (
     climate,
@@ -15,6 +16,7 @@ from app.api import (
     satellite,
     signals,
 )
+from app.clients.power import PowerClient, PowerUnavailable
 from app.db import init_db, make_engine
 from app.repositories.region import load_region
 from app.settings import Settings
@@ -37,6 +39,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.engine = engine
     app.state.region = load_region(settings.data_dir)
+    app.state.power = PowerClient(settings.data_dir / "cache" / "power", live=settings.power_live)
+
+    @app.exception_handler(PowerUnavailable)
+    async def power_unavailable(_: Request, exc: PowerUnavailable) -> JSONResponse:
+        return JSONResponse(status_code=503, content={"detail": str(exc)})
     app.add_middleware(
         CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
     )
