@@ -127,7 +127,8 @@ def test_offline_plot_elsewhere_in_region_uses_the_shared_cache(client, tmp_path
     assert response.status_code == 200 and response.json()["signals"][0]["source"] == "NASA POWER"
 
 
-def test_satellite_gap_at_reference_date_falls_back_to_power(client, tmp_path):
+def test_satellite_gap_at_reference_date_falls_back_to_power(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(get_config().signals, "satellite_rain_in_signals", True)
     from app.repositories.rasters import RasterStore
 
     plot = make_plot(client)

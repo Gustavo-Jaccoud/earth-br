@@ -32,6 +32,7 @@ class SignalsConfig(BaseModel):
     soil_moisture: SoilMoistureConfig
     min_satellite_years: int
     dry_day_mm: float = 1.0
+    satellite_rain_in_signals: bool = False
 
 
 class RotationConfig(BaseModel):

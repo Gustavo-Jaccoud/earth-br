@@ -157,6 +157,8 @@ def test_monthly_endpoint_includes_satellite_when_rasters_exist(client, tmp_path
     assert ndvi["source"] == "NASA MODIS" and ndvi["unit"] == "" and ndvi["normal_period"] == (
         "2018-2025")
     assert ndvi["months"][-2]["value"] == pytest.approx(0.4)
+    assert "underestimates" in by_id["rain_satellite"]["note"] and by_id["ndvi"]["note"] is None
+    assert by_id["rain"]["note"] is None
     rain = by_id["rain_satellite"]["months"]
     assert rain[-1]["value"] is None  # o GPM termina em set/2025
     assert next(m for m in rain if m["label"] == "2025-06")["value"] == pytest.approx(60.0)

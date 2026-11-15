@@ -36,6 +36,7 @@ class MonthlySeries(BaseModel):
     unit: str
     source: str
     normal_period: str  # years behind `normal`, e.g. "2001-2020"
+    note: str | None = None  # caveat the reader should know before using the series
     months: list[MonthlyValue]
 
 

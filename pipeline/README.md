@@ -38,9 +38,13 @@ export EDL_USERNAME=seu_usuario EDL_PASSWORD=sua_senha               #   usuári
 - **Testado automaticamente:** recorte e leitura do GAEZ, cálculo de anos secos, contrato dos rasters
   (`layers.py`), geração dos mapas (`render_maps.py`), montagem do pedido ao AppEEARS, máscara de
   valores inválidos, divisão em blocos e conversão do GPM.
-- **Testado ao vivo, parcialmente:** o `gpm.py` consulta o catálogo (CMR), autentica no Harmony com o
-  token e cria o job; o job falhou só por falta de aceite dos termos do GES DISC (veja acima). Falta
-  ver o download e a conversão com dados reais.
+- **Testado ao vivo:** o `gpm.py` baixou a série completa (3.926 dias, 2015-01-01 a 2025-09-30) pelo
+  Harmony, com token do Earthdata e os termos do GES DISC aceitos. O serviço falha de vez em quando
+  (um pedido travou por horas; um download voltou 400): o script retoma do primeiro dia que falta,
+  tenta de novo sozinho e para com aviso se um bloco passar de 40 minutos. Rodar de novo continua
+  de onde parou.
+- **Resultado a ler com cuidado:** em Aquidabã o GPM registra muito menos chuva que o NASA POWER
+  de junho a setembro (média de junho: 29 mm contra 143 mm). Por isso ele não é usado nos semáforos.
 - **NÃO testado ao vivo:** login, tarefa e download do AppEEARS (`appeears.py`), escritos pela
   documentação da API. Se algo falhar, o erro aparece com a mensagem original; ajuste e rode de novo.
 - Os tempos de download não foram medidos. O AppEEARS processa a tarefa em fila (minutos a horas) e o

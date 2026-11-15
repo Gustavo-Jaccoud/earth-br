@@ -99,6 +99,7 @@ def get_monthly_climate(
         variables.append(MonthlySeries(
             variable=name, unit=unit, source=rasters.meta(layer)["source"],
             normal_period=monthly.satellite_years(daily, reference),
+            note=get_config().phrases.get(f"note.{name}"),
             months=values(items, normal)))
     return MonthlyClimate(plot_id=plot.id, source="NASA POWER", reference_date=reference,
                           normal_period="2001-2020", variables=variables,

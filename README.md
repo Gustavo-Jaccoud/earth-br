@@ -17,10 +17,12 @@ do campo. Este backend traduz esses dados em **semáforos**, **comparações de 
 ## De onde vêm os dados
 
 > **Estado atual:** os semáforos, o comparador e os relatórios usam **NASA POWER** e **FAO GAEZ**.
-> SMAP, GPM e MODIS têm o código de download pronto (`pipeline/`), mas **os arquivos ainda não
-> foram baixados**: não há `data/rasters` nem `data/maps` nesta versão, e as rotas de satélite e de
-> mapa respondem 404 até o pipeline rodar. O AppEEARS (SMAP e MODIS) exige usuário e senha do
-> Earthdata e o GPM exige aceitar os termos do GES DISC — veja [`pipeline/README.md`](pipeline/README.md).
+> A chuva por satélite (**GPM IMERG**, 2015 a set/2025) já está em `data/rasters/precipitation.nc`
+> e aparece só como variável separada na análise: comparada ao POWER em Aquidabã, ela registra
+> muito menos chuva de junho a setembro, então **não entra nos semáforos**
+> (`satellite_rain_in_signals: false` em `app/config/signals.yaml`). SMAP e MODIS têm o código de
+> download pronto, mas ainda não foram baixados (o AppEEARS exige usuário e senha do Earthdata)
+> — veja [`pipeline/README.md`](pipeline/README.md).
 
 | Fonte | Produto | Para que serve | Resolução |
 |---|---|---|---|

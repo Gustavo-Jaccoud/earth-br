@@ -11,3 +11,8 @@ soil_moisture:
 min_satellite_years: 5
 # Dia com menos chuva que isto conta como dia seco (variável "maior sequência sem chuva").
 dry_day_mm: 1.0
+# Usar a chuva de satélite (GPM) no semáforo de chuva quando ela cobre a data?
+# Desligado: comparado ao NASA POWER em Aquidabã (2015-2023), o GPM IMERG registra muito menos
+# chuva de junho a setembro (ex.: junho, 29 mm contra 143 mm), o auge da estação chuvosa do
+# leste do Nordeste. O GPM continua disponível como variável separada na análise.
+satellite_rain_in_signals: false

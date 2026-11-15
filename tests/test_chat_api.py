@@ -67,7 +67,8 @@ def test_rotation_answer_says_when_current_crop_is_already_best(client, plot):
     assert expected in answer
 
 
-def test_signal_sources_come_from_the_signal_itself(client, tmp_path, plot):
+def test_signal_sources_come_from_the_signal_itself(client, tmp_path, plot, monkeypatch):
+    monkeypatch.setattr(get_config().signals, "satellite_rain_in_signals", True)
     from app.repositories.rasters import RasterStore
     from tests.helpers import make_layer
 

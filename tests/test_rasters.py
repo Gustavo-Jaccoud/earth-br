@@ -6,6 +6,7 @@ import pytest
 import xarray as xr
 from shapely.geometry import box
 
+from app.config_loader import get_config
 from app.repositories.rasters import RasterStore
 from pipeline.layers import write_layer
 from tests.helpers import install_power, make_layer, make_plot
@@ -80,7 +81,18 @@ def test_satellite_unknown_layer_422(client):
     assert client.get(f"/plots/{plot['id']}/satellite/foo").status_code == 422
 
 
-def test_signals_prefer_satellite_when_covered(client, tmp_path):
+def test_rain_signal_stays_on_power_even_with_a_satellite_raster(client, tmp_path):
+    # O GPM subestima a estação chuvosa no leste do Nordeste: por padrão o semáforo não o usa.
+    plot = make_plot(client)
+    install_power(client, tmp_path, plot)
+    make_layer(tmp_path, "precipitation", "2015-01-01", "2026-12-31", source="NASA GPM TESTE")
+    client.app.state.rasters = RasterStore(tmp_path)
+    signals = client.get(f"/plots/{plot['id']}/signals").json()["signals"]
+    assert signals[0]["kind"] == "rain" and signals[0]["source"] == "NASA POWER"
+
+
+def test_signals_prefer_satellite_when_covered(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(get_config().signals, "satellite_rain_in_signals", True)
     plot = make_plot(client)
     install_power(client, tmp_path, plot)
     make_layer(tmp_path, "precipitation", "2015-01-01", "2026-12-31", value=2.0,
@@ -92,7 +104,8 @@ def test_signals_prefer_satellite_when_covered(client, tmp_path):
     assert signals["soil_moisture"]["source"] == "NASA POWER"  # sem raster de umidade
 
 
-def test_signals_fallback_when_raster_short(client, tmp_path):
+def test_signals_fallback_when_raster_short(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(get_config().signals, "satellite_rain_in_signals", True)
     plot = make_plot(client)
     install_power(client, tmp_path, plot)
     make_layer(tmp_path, "precipitation", "2025-01-01", "2026-12-31")  # só 1 ano de histórico
@@ -101,7 +114,8 @@ def test_signals_fallback_when_raster_short(client, tmp_path):
     assert signals[0]["source"] == "NASA POWER"
 
 
-def test_signals_fallback_when_raster_does_not_cover_reference(client, tmp_path):
+def test_signals_fallback_when_raster_does_not_cover_reference(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(get_config().signals, "satellite_rain_in_signals", True)
     plot = make_plot(client)
     install_power(client, tmp_path, plot)
     make_layer(tmp_path, "precipitation", "2015-01-01", "2026-06-30")  # termina antes da data

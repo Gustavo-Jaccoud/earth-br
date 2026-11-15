@@ -117,8 +117,9 @@ def build_signals(plot: Plot, reference_date: date | None, power: PowerClient,
         shape = geometry.to_shape(plot.geometry)
         years = climatology.NORMAL_YEARS
 
-        sat = _satellite_series(rasters, "precipitation", shape, reference, cfg.rain.window_days,
-                                "sum", cfg.min_satellite_years)
+        sat = cfg.satellite_rain_in_signals and _satellite_series(
+            rasters, "precipitation", shape, reference, cfg.rain.window_days, "sum",
+            cfg.min_satellite_years)
         if sat:
             rain = rain_signal(sat[0], sat[0], sat[1], reference, cfg.rain,
                                rasters.meta("precipitation")["source"])

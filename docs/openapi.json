@@ -1760,6 +1760,17 @@
             "type": "string",
             "title": "Normal Period"
           },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
           "months": {
             "items": {
               "$ref": "#/components/schemas/MonthlyValue"
