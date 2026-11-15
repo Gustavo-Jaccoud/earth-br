@@ -367,13 +367,21 @@ def _signals(section: ReportSection) -> list:
     return flowables
 
 
+def option_label(option: dict, data: dict) -> str:
+    """Crop sequence of an option, marking the one that is the farmer's current practice."""
+    sequence = crop_sequence(option.get("crops"))
+    current = data.get("current")
+    return f"{sequence} (current practice)" if current and option.get("crops") == current \
+        else sequence
+
+
 def _rotation(section: ReportSection) -> list:
     options = _dicts(section.data["options"])
     rows, details = [], []
     for position, option in enumerate(options, start=1):
         scores = {s.get("name"): s for s in _dicts(option.get("scores"))}
         rank = option.get("rank", position)
-        sequence = crop_sequence(option.get("crops"))
+        sequence = option_label(option, section.data)
         rows.append([fmt_number(rank), sequence]
                     + [fmt_number(scores.get(name, {}).get("score"), 1) for name in CRITERIA]
                     + [_Markup(f"<b>{_esc(fmt_number(option.get('total'), 1))}</b>")])

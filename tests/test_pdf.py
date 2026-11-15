@@ -245,3 +245,15 @@ def test_rotation_section_heading_is_guarded_against_being_left_alone_on_a_page(
     flowables = pdf._section(section)
     assert isinstance(flowables[0], (CondPageBreak, KeepTogether))  # nunca o título solto
     assert pdf._height(pdf._section_body(section)) > 0  # mede blocos agrupados sem falhar
+
+
+def test_rotation_table_marks_the_current_practice():
+    scores = [{"name": "water", "score": 80.0, "source": "NASA POWER", "detail": "d"}]
+    options = [{"crops": ["sorgo", "feijao"], "scores": scores, "total": 70.0, "rank": 1},
+               {"crops": ["milho"], "scores": scores, "total": 60.0, "rank": 2}]
+    section = ReportSection(title="Crop recommendations", text="v",
+                            data={"options": options, "current": ["milho"]})
+    assert pdf.option_label(options[1], section.data) == "Maize (current practice)"
+    assert pdf.option_label(options[0], section.data) == "Sorghum › Common bean"
+    assert pdf.option_label(options[1], {"options": options}) == "Maize"  # relatórios sem `current`
+    assert pdf.render_report(report(section), PLOT, FARM).startswith(b"%PDF")
