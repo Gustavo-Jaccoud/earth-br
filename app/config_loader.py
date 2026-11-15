@@ -58,12 +58,27 @@ class QuizConfig(BaseModel):
     questions: list[QuizQuestionConfig]
 
 
+class ChatTopic(BaseModel):
+    id: str
+    question: str | None = None
+    keywords: list[str]
+    answer: str | None = None
+    fallback: str
+    sources: list[str] = []
+
+
+class ChatConfig(BaseModel):
+    generic: str
+    topics: list[ChatTopic]
+
+
 class AppConfig(BaseModel):
     crops: list[Crop]
     signals: SignalsConfig
     rotation: RotationConfig
     quiz: QuizConfig
     phrases: dict[str, str]
+    chat: ChatConfig
 
 
 def _read(path: Path):
@@ -78,6 +93,7 @@ def load_config(config_dir: Path = DEFAULT_CONFIG_DIR) -> AppConfig:
         rotation=_read(config_dir / "rotation.yaml"),
         quiz=_read(config_dir / "quiz.yaml"),
         phrases=_read(config_dir / "phrases.yaml"),
+        chat=_read(config_dir / "chat.yaml"),
     )
 
 
