@@ -6,11 +6,15 @@ from sqlmodel import Session, select
 from app.models.reports import Report, ReportSection, ReportSummary
 from app.repositories.tables import ReportRow
 
+# Sections dropped from the product; reports saved before the change no longer show them.
+REMOVED_SECTIONS = {"Financial impact"}
+
 
 def _report(row: ReportRow) -> Report:
     return Report(
         id=row.id, plot_id=row.plot_id, kind=row.kind, title=row.title, created_at=row.created_at,
-        sections=[ReportSection(**s) for s in json.loads(row.sections_json)],
+        sections=[ReportSection(**s) for s in json.loads(row.sections_json)
+                  if s.get("title") not in REMOVED_SECTIONS],
     )
 
 

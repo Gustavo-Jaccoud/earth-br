@@ -60,7 +60,7 @@ def test_pdf_route_for_analysis_and_quiz(client, tmp_path):
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/pdf"
         assert response.headers["content-disposition"] == (
-            f'attachment; filename="relatorio-{report_["id"]}.pdf"')
+            f'attachment; filename="report-{report_["id"]}.pdf"')
         assert response.content.startswith(b"%PDF") and len(response.content) > 1500
 
 
@@ -220,3 +220,28 @@ def test_value_formatting():
 def test_logo_is_bundled_and_embedded():
     assert pdf.LOGO_PATH.read_bytes().startswith(b"\x89PNG")
     assert b"/Subtype /Image" in pdf.render_report(report(), PLOT, FARM)
+
+
+def test_pdf_is_stored_when_the_report_is_created_and_served_from_disk(client, tmp_path, settings):
+    plot = make_plot(client)
+    install_power(client, tmp_path, plot)
+    report = client.post(f"/plots/{plot['id']}/reports/analysis").json()
+    stored = settings.var_dir / "reports" / f"{report['id']}.pdf"
+    assert stored.exists() and stored.read_bytes().startswith(b"%PDF")
+    assert client.get(f"/reports/{report['id']}/pdf").content == stored.read_bytes()
+    stored.unlink()  # arquivo perdido: é gerado e guardado de novo
+    assert client.get(f"/reports/{report['id']}/pdf").content.startswith(b"%PDF")
+    assert stored.exists()
+
+
+def test_rotation_section_heading_is_guarded_against_being_left_alone_on_a_page():
+    from reportlab.platypus import CondPageBreak, KeepTogether
+
+    scores = [{"name": n, "score": 50.0, "source": "NASA POWER", "detail": "Detail text."}
+              for n in ("water", "soil", "suitability")]
+    options = [{"crops": ["milho"], "scores": scores, "total": 50.0, "rank": i} for i in (1, 2, 3)]
+    section = ReportSection(title="Crop recommendations", text="The best option is Maize.",
+                            data={"options": options, "verdict": "x", "current": ["milho"]})
+    flowables = pdf._section(section)
+    assert isinstance(flowables[0], (CondPageBreak, KeepTogether))  # nunca o título solto
+    assert pdf._height(pdf._section_body(section)) > 0  # mede blocos agrupados sem falhar

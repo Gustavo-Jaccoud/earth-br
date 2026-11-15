@@ -41,7 +41,7 @@ def test_quiz_high_risk_report(client, plot):
     report = response.json()
     assert report["kind"] == "quiz" and report["title"] == "Quick start — Talhão 1"
     s = sections(report)
-    assert list(s) == ["Risk", "Environmental impact", "Financial impact", "Suggestions"]
+    assert list(s) == ["Risk", "Environmental impact", "Crop recommendations", "Suggestions"]
     assert s["Risk"]["text"] == render("quiz.risk.high", risk=100)
     assert s["Risk"]["data"]["risk"] == 100 and s["Risk"]["data"]["answers"] == HIGH
     assert len(s["Suggestions"]["data"]["suggestions"]) == 8
@@ -55,28 +55,65 @@ def test_multi_answer_counts_highest_risk_only(client, plot):
     assert one == two["risk"] > 0
 
 
-def test_quiz_financial_estimate_uses_gaez_yield_and_water_shortfall(client, plot):
-    section = sections(submit(client, plot, HIGH).json())["Financial impact"]
+def test_quiz_report_has_no_financial_section(client, plot):
+    report = submit(client, plot, HIGH).json()
+    assert "Financial impact" not in sections(report)
+    assert "R$" not in str(report)
+
+
+def test_crop_recommendations_compare_current_practice_with_two_rotations(client, plot):
+    section = sections(submit(client, plot, HIGH).json())["Crop recommendations"]
     data = section["data"]
-    assert data["crop"] == "milho" and data["attainable_yield_kg_ha"] == 2500.0
-    assert 0 < data["water_coverage_pct"] < 100  # a média de 2001-2020 inclui anos secos
-    expected = plot["area_ha"] * 2500 * (1 - data["water_coverage_pct"] / 100) * 1.2
-    assert data["estimated_loss_brl_per_year"] == pytest.approx(expected, rel=0.02)
-    assert "maize" in section["text"] and "R$" in section["text"]
+    assert data["current"] == ["milho"]
+    options = [o["crops"] for o in data["options"]]
+    assert len(options) == 3 and ["milho"] in options
+    assert ["sorgo", "feijao"] in options  # cereal mais apto → leguminosa mais apta
+    assert all(len(o) == 2 for o in options if o != ["milho"])
+    assert len({tuple(o) for o in options}) == 3
+    assert sorted(o["rank"] for o in data["options"]) == [1, 2, 3]
+    assert {s["name"] for s in data["options"][0]["scores"]} == {"water", "soil", "suitability"}
+    assert section["text"] == data["verdict"] and "best option" in section["text"]
+
+
+def test_crop_recommendations_without_current_crop_offer_three_rotations(client, tmp_path):
+    plot = make_plot(client)
+    install_power(client, tmp_path, plot)
+    data = sections(submit(client, plot, LOW).json())["Crop recommendations"]["data"]
+    assert data["current"] is None and len(data["options"]) == 3
+    assert all(len(o["crops"]) == 2 for o in data["options"])
+
+
+def test_crop_recommendations_unavailable_outside_gaez_area(client, tmp_path):
+    outside = [[-45.01, -5.01], [-45.0, -5.01], [-45.0, -5.0], [-45.01, -5.0], [-45.01, -5.01]]
+    plot = make_plot(client, outside, crop="milho")
+    install_power(client, tmp_path, plot)
+    section = sections(submit(client, plot, HIGH).json())["Crop recommendations"]
+    assert section["text"] == render("report.unavailable") and section["data"] == {}
+
+
+def test_old_reports_lose_their_financial_section(client, plot):
+    import json
+
+    from sqlmodel import Session
+
+    from app.repositories.tables import ReportRow
+
+    report = submit(client, plot, HIGH).json()
+    with Session(client.app.state.engine) as session:
+        row = session.get(ReportRow, report["id"])
+        stored = json.loads(row.sections_json)
+        stored.insert(2, {"title": "Financial impact", "text": "R$ 527", "data": {"x": 1}})
+        row.sections_json = json.dumps(stored)
+        session.add(row)
+        session.commit()
+    again = client.get(f"/reports/{report['id']}").json()
+    assert [s["title"] for s in again["sections"]] == [s["title"] for s in report["sections"]]
 
 
 def test_quiz_low_risk_without_suggestions(client, plot):
     s = sections(submit(client, plot, LOW).json())
     assert s["Risk"]["text"] == render("quiz.risk.low", risk=0)
     assert s["Suggestions"]["text"] == render("quiz.no_suggestions")
-
-
-def test_quiz_no_financial_without_gaez_crop(client, tmp_path):
-    for crop in ("palma", None):
-        plot = make_plot(client, crop=crop)
-        install_power(client, tmp_path, plot)
-        s = sections(submit(client, plot, LOW).json())
-        assert s["Financial impact"]["text"] == render("quiz.no_financial")
 
 
 def test_quiz_saved_and_listed(client, plot):

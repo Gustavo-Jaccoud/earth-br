@@ -97,3 +97,42 @@ def compare(plot: Plot, farm: Farm, request: RotationRequest, power: PowerClient
         plot_id=plot.id, options=options,
         verdict=render("rotation.verdict", best=_label(best_crops), total=f"{best_total:.1f}"),
     )
+
+
+MAX_SEQUENCE_MONTHS = 12
+
+
+def rotation_candidates(plot: Plot, gaez: GaezRepository) -> tuple[list, list]:
+    """(main crops, legumes) that can enter a rotation here: annual crops (cycle under a year)
+    with suitability data, most suitable first. Perennials are not rotation candidates."""
+    from app.services import regional  # local import: regional does not depend on rotation
+
+    crops = {c.id: c for c in get_config().crops}
+    ranked = [crops[i.crop] for i in regional.suitability_ranking(plot, gaez).items]
+    annual = [c for c in ranked if len(c.kc) < MAX_SEQUENCE_MONTHS]
+    return ([c for c in annual if not c.soil_restoring], [c for c in annual if c.soil_restoring])
+
+
+def recommended_options(plot: Plot, gaez: GaezRepository
+                        ) -> tuple[list[list[str]], list[str] | None]:
+    """Three options to compare: the current practice (when the field has a current crop) and
+    "main crop → soil-restoring legume" rotations in suitability order, preferring sequences
+    that fit in a year and crops not already used by another option.
+    Returns (options, current practice); fewer than two options means nothing to compare."""
+    crops = {c.id: c for c in get_config().crops}
+    current = [plot.current_crop] if plot.current_crop in crops else None
+    mains, legumes = rotation_candidates(plot, gaez)
+    pairs = [(m, legume) for m in mains for legume in legumes]
+    pairs.sort(key=lambda p: len(p[0].kc) + len(p[1].kc) > MAX_SEQUENCE_MONTHS)  # stable sort
+    wanted = 2 if current else 3
+    chosen: list[tuple] = []
+    for reuse_allowed in (False, True):
+        for pair in pairs:
+            if len(chosen) >= wanted:
+                break
+            used = {c.id for other in chosen for c in other}
+            if pair in chosen or (not reuse_allowed and {pair[0].id, pair[1].id} & used):
+                continue
+            chosen.append(pair)
+    options = ([current] if current else []) + [[m.id, legume.id] for m, legume in chosen]
+    return options, current

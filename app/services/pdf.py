@@ -584,6 +584,9 @@ def _section_body(section: ReportSection) -> list:
 def _height(flowables: list) -> float:
     total = 0.0
     for flowable in flowables:
+        if isinstance(flowable, KeepTogether):  # não se mede sozinho: mede o que ele agrupa
+            total += _height(flowable._content)
+            continue
         total += flowable.wrap(CONTENT_WIDTH, FRAME_HEIGHT)[1]
         total += flowable.getSpaceBefore() + flowable.getSpaceAfter()
     return total

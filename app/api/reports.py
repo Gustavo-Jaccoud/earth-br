@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 
 from app.api.deps import (
@@ -8,6 +10,7 @@ from app.api.deps import (
     get_power_client,
     get_rasters,
     get_report_repo,
+    get_var_dir,
 )
 from app.clients.power import PowerClient
 from app.models.farms import Farm, Plot
@@ -16,7 +19,7 @@ from app.repositories.farms import FarmRepository
 from app.repositories.gaez import GaezRepository
 from app.repositories.rasters import RasterStore
 from app.repositories.reports import ReportRepository
-from app.services import pdf, reports, rotation
+from app.services import pdf_store, reports, rotation
 from app.services.texts import render
 
 router = APIRouter(tags=["relatórios"])
@@ -31,6 +34,7 @@ def create_analysis_report(
     rasters: RasterStore = Depends(get_rasters),
     gaez: GaezRepository = Depends(get_gaez),
     repo: ReportRepository = Depends(get_report_repo),
+    var_dir: Path = Depends(get_var_dir),
 ) -> Report:
     """Gera e salva o relatório de análise do talhão (condição atual, rotação opcional,
     aptidão das culturas e anos secos)."""
@@ -40,8 +44,10 @@ def create_analysis_report(
                                           rasters, gaez)
     except rotation.UnknownCrop as exc:
         raise HTTPException(422, str(exc)) from exc
-    return repo.save(plot.id, "analysis", render("report.title_analysis", plot=plot.name),
-                     sections)
+    report = repo.save(plot.id, "analysis", render("report.title_analysis", plot=plot.name),
+                       sections)
+    pdf_store.save(var_dir, report, plot, farm)  # the PDF is kept with the report
+    return report
 
 
 @router.get("/reports")
@@ -64,14 +70,17 @@ def get_report_pdf(
     report_id: int,
     repo: ReportRepository = Depends(get_report_repo),
     farms: FarmRepository = Depends(get_farm_repo),
+    var_dir: Path = Depends(get_var_dir),
 ) -> Response:
-    """Relatório em PDF, pronto para baixar e compartilhar."""
+    """The report as a PDF. The file is stored when the report is created and served from
+    disk afterwards (it is generated again if the stored file is missing)."""
     report = repo.get(report_id)
     if report is None:
         raise HTTPException(404, "Report not found.")
     plot = farms.get_plot(report.plot_id)
     farm = farms.get_farm(plot.farm_id) if plot else None
     return Response(
-        content=pdf.render_report(report, plot, farm), media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="relatorio-{report_id}.pdf"'},
+        content=pdf_store.load_or_create(var_dir, report, plot, farm),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="report-{report_id}.pdf"'},
     )

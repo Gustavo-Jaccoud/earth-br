@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from pathlib import Path
 
 from fastapi import Depends, HTTPException, Request
 from sqlmodel import Session
@@ -31,6 +32,10 @@ def get_gaez(request: Request) -> GaezRepository:
 
 def get_report_repo(session: Session = Depends(get_session)) -> ReportRepository:
     return ReportRepository(session)
+
+
+def get_var_dir(request: Request) -> Path:
+    return request.app.state.settings.var_dir
 
 
 def get_region(request: Request) -> Region:

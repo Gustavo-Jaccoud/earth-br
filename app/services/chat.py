@@ -12,7 +12,6 @@ from app.models.rotation import RotationRequest
 from app.repositories.gaez import GaezRepository
 from app.repositories.rasters import RasterStore
 from app.services import monthly, regional, rotation
-from app.services.quiz import financial_section
 from app.services.signals import build_signals
 
 
@@ -127,9 +126,9 @@ def _rotation(ctx: Context) -> dict[str, str] | None:
     """Current crop against the best-suited non-legume followed by the best-suited legume."""
     crops = {c.id: c for c in get_config().crops}
     current = ctx.plot.current_crop
-    ranked = [crops[i.crop] for i in regional.suitability_ranking(ctx.plot, ctx.gaez).items]
-    main = next((c for c in ranked if not c.soil_restoring and c.id != current), None)
-    legume = next((c for c in ranked if c.soil_restoring and c.id != current), None)
+    mains, legumes = rotation.rotation_candidates(ctx.plot, ctx.gaez)
+    main = next((c for c in mains if c.id != current), None)
+    legume = next((c for c in legumes if c.id != current), None)
     if current not in crops or main is None or legume is None:
         return None
     result = rotation.compare(ctx.plot, ctx.farm,
@@ -146,11 +145,6 @@ def _rotation(ctx: Context) -> dict[str, str] | None:
             "alternative_total": str(alternative_total)}
 
 
-def _financial(ctx: Context) -> dict[str, str] | None:
-    section = financial_section(ctx.plot, ctx.power, ctx.gaez)
-    return {"text": section.text} if section.data else None
-
-
 BUILDERS: dict[str, Callable[[Context], dict | None]] = {
     "rain": lambda ctx: _signal(ctx, "rain"),
     "soil_moisture": lambda ctx: _signal(ctx, "soil_moisture"),
@@ -159,7 +153,6 @@ BUILDERS: dict[str, Callable[[Context], dict | None]] = {
     "dry_years": _dry_years,
     "crops": _crops,
     "rotation": _rotation,
-    "financial": _financial,
 }
 
 

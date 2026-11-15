@@ -37,7 +37,6 @@ def test_rain_answer_uses_real_signal(client, plot):
     ("is my soil dry?", "soil_moisture"), ("how hot is it?", "temperature"),
     ("am I at risk?", "risk"), ("worst drought years", "dry_years"),
     ("which crops suit my land?", "crops"), ("compare rotation options", "rotation"),
-    ("how much money could I lose?", "financial"),
 ])
 def test_each_data_topic_answers_with_data(client, plot, message, topic):
     response = ask(client, plot, message)
@@ -85,6 +84,7 @@ def test_portuguese_question_gets_the_same_topic(client, plot):
 @pytest.mark.parametrize("message,topic", [
     ("download the pdf report", "reports"), ("where does the data come from?", "sources"),
     ("what can you do?", "help"), ("hello", "greeting"), ("thank you", "thanks"),
+    ("how much money could I lose?", "financial"),
     ("will it rain tomorrow? what is the forecast", "forecast"),
 ])
 def test_fixed_topics(client, plot, message, topic):
@@ -105,7 +105,7 @@ def test_power_outage_falls_back_to_fixed_text(client, tmp_path):
     install_power(client, tmp_path, plot, history=False, recent=False)
     for message, topic in [("how is the rain?", "rain"), ("am I at risk?", "risk"),
                            ("how hot is it?", "temperature"), ("driest years", "dry_years"),
-                           ("compare rotation", "rotation"), ("money lose", "financial")]:
+                           ("compare rotation", "rotation")]:
         response = ask(client, plot, message)
         assert response.status_code == 200
         body = response.json()
@@ -124,8 +124,7 @@ def test_outside_gaez_area_falls_back(client, tmp_path):
 def test_no_current_crop_falls_back(client, tmp_path):
     plot = make_plot(client)
     install_power(client, tmp_path, plot)
-    for message, topic in [("compare rotation options", "rotation"),
-                           ("how much money could I lose?", "financial")]:
+    for message, topic in [("compare rotation options", "rotation")]:
         response = ask(client, plot, message)
         assert response.status_code == 200
         assert response.json()["answer"] == clean(TOPICS[topic].fallback)

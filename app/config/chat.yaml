@@ -91,16 +91,13 @@ topics:
     sources: [NASA POWER, FAO GAEZ v4]
 
   - id: financial
-    question: How much could a dry year cost me?
     priority: 3
     keywords: [money, cost*, lose, loss*, financial*, income, dinheiro, prejuizo*, perd*, custo*, custa*, renda]
-    answer: >-
-      {text} It uses the attainable yield for your area and the share of the crop's water need
-      that rain did not cover, on average.
+    answer: null
     fallback: >-
-      I cannot estimate the financial impact for this property: it needs a current crop with
-      yield and price data. The Quick start report includes the estimate when it is available.
-    sources: [NASA POWER, FAO GAEZ v4]
+      earth + BR does not estimate financial losses: there is not enough data to support a
+      reliable figure yet. What it can show is how often rain fell short of what your crop
+      needs, in the Quick start report and in the Land analysis.
 
   - id: reports
     question: How do I get a report?

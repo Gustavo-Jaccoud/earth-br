@@ -19,9 +19,9 @@ def test_config_has_all_topics_with_fallback():
     assert [t.id for t in CFG.topics] == TOPIC_IDS
     assert all(t.fallback.strip() and t.keywords for t in CFG.topics)
     assert CFG.generic.strip()
-    assert all(t.answer is None for t in CFG.topics if t.id in TOPIC_IDS[8:])
+    assert all(t.answer is None for t in CFG.topics if t.id in TOPIC_IDS[7:])
     assert all(t.question is None for t in CFG.topics if t.id in TOPIC_IDS[10:])
-    assert all(t.answer for t in CFG.topics if t.id in TOPIC_IDS[:8])
+    assert all(t.answer for t in CFG.topics if t.id in TOPIC_IDS[:7])
 
 
 def test_fallbacks_and_generic_have_no_digits():
