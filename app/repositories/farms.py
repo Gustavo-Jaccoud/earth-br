@@ -8,9 +8,9 @@ from app.services import geometry
 
 def _plot(row: PlotRow) -> Plot:
     boundary = GeoJSONPolygon.model_validate_json(row.geometry_json)
-    # Rows created before the query square existed get it computed on the fly.
+    # Rows without a stored query area get it computed on the fly.
     query = (GeoJSONPolygon.model_validate_json(row.query_geometry_json)
-             if row.query_geometry_json else geometry.query_square(geometry.to_shape(boundary)))
+             if row.query_geometry_json else geometry.query_area(geometry.to_shape(boundary)))
     return Plot(
         id=row.id,
         farm_id=row.farm_id,
@@ -47,13 +47,13 @@ class FarmRepository:
     def create_plot(self, farm_id: int, data: PlotCreate) -> Plot:
         """Levanta ValueError se a geometria for inválida (nada é gravado)."""
         shape = geometry.to_shape(data.geometry)
-        lon, lat = geometry.centroid(shape)
+        lon, lat = geometry.query_point(shape)
         row = PlotRow(
             farm_id=farm_id,
             name=data.name,
             current_crop=data.current_crop,
             geometry_json=data.geometry.model_dump_json(),
-            query_geometry_json=geometry.query_square(shape).model_dump_json(),
+            query_geometry_json=geometry.query_area(shape).model_dump_json(),
             centroid_lon=lon,
             centroid_lat=lat,
             area_ha=round(geometry.area_ha(shape), 4),

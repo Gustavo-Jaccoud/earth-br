@@ -25,6 +25,7 @@ def _migrate(engine: Engine) -> None:
         columns = {row[1] for row in connection.exec_driver_sql("PRAGMA table_info(plot)")}
         if "query_geometry_json" not in columns:
             connection.exec_driver_sql("ALTER TABLE plot ADD COLUMN query_geometry_json VARCHAR")
+        _refresh_query_areas(connection)
         # The demo property used to have Portuguese names; the app is in English.
         demo = connection.exec_driver_sql(
             "SELECT id FROM farm WHERE name = 'Sítio Demonstração'").fetchall()
@@ -39,3 +40,29 @@ def _migrate(engine: Engine) -> None:
 
 def new_session(engine: Engine) -> Session:
     return Session(engine)
+
+
+def _refresh_query_areas(connection) -> None:
+    """Keeps the stored query area and its centre in line with the current rule (the rectangle
+    that encloses the boundary). Rows written under an older rule are rewritten."""
+    import json
+
+    from app.models.farms import GeoJSONPolygon
+    from app.services import geometry
+
+    rows = connection.exec_driver_sql(
+        "SELECT id, geometry_json, query_geometry_json, centroid_lon, centroid_lat FROM plot"
+    ).fetchall()
+    for plot_id, boundary_json, stored, lon, lat in rows:
+        try:
+            shape = geometry.to_shape(GeoJSONPolygon.model_validate_json(boundary_json))
+        except ValueError:
+            continue  # an invalid stored boundary is left as it is
+        query = geometry.query_area(shape).model_dump_json()
+        point = geometry.query_point(shape)
+        same = (stored is not None and json.loads(stored) == json.loads(query)
+                and abs(lon - point[0]) < 1e-9 and abs(lat - point[1]) < 1e-9)
+        if not same:
+            connection.exec_driver_sql(
+                "UPDATE plot SET query_geometry_json = ?, centroid_lon = ?, centroid_lat = ? "
+                "WHERE id = ?", (query, point[0], point[1], plot_id))

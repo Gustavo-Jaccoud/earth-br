@@ -80,27 +80,66 @@ def ring_area_ha(ring):
     return area * 111_320**2 * math.cos(math.radians(lat)) / 10_000
 
 
-def test_irregular_boundary_is_kept_and_a_query_square_is_generated(client):
+def bounds(ring):
+    return (min(p[0] for p in ring), min(p[1] for p in ring),
+            max(p[0] for p in ring), max(p[1] for p in ring))
+
+
+def test_irregular_boundary_is_kept_and_the_query_area_encloses_it(client):
     farm = make_farm(client)
     plot = client.post(f"/farms/{farm['id']}/plots", json=plot_body(L_SHAPE)).json()
     assert plot["geometry"]["coordinates"][0] == L_SHAPE  # limite real, como desenhado
-    square = plot["query_geometry"]["coordinates"][0]
-    assert len(square) == 5 and square[0] == square[-1]
-    lons, lats = sorted({p[0] for p in square}), sorted({p[1] for p in square})
-    assert len(lons) == 2 and len(lats) == 2  # retângulo alinhado aos eixos
-    assert ring_area_ha(square) == pytest.approx(plot["area_ha"], rel=0.01)  # mesma área
-    side_m = [(lons[1] - lons[0]) * 111_320 * 0.98396, (lats[1] - lats[0]) * 111_320]
-    assert side_m[0] == pytest.approx(side_m[1], rel=0.01)  # quadrado no terreno
-    assert plot["centroid"] == pytest.approx([(lons[0] + lons[1]) / 2, (lats[0] + lats[1]) / 2])
+    query = plot["query_geometry"]["coordinates"][0]
+    assert len(query) == 5 and query[0] == query[-1]
+    # retângulo alinhado aos eixos que envolve o polígono inteiro, justo nos seus limites
+    assert bounds(query) == pytest.approx(bounds(L_SHAPE))
+    assert len({p[0] for p in query}) == 2 and len({p[1] for p in query}) == 2
+    west, south, east, north = bounds(query)
+    assert all(west <= x <= east and south <= y <= north for x, y in L_SHAPE)
+    assert ring_area_ha(query) > plot["area_ha"]  # o L ocupa 3/4 do retângulo
+    assert plot["area_ha"] == pytest.approx(ring_area_ha(L_SHAPE), rel=0.01)  # área do limite real
+    assert plot["centroid"] == pytest.approx([(west + east) / 2, (south + north) / 2])
     assert client.get(f"/plots/{plot['id']}").json() == plot
 
 
-def test_square_boundary_gets_an_equivalent_query_square(client):
+def test_triangle_far_from_its_centroid_square_is_fully_enclosed(client):
+    # Um triângulo comprido: o quadrado de mesma área centrado no centroide deixaria pontas de
+    # fora; a área de consulta tem de conter todos os vértices.
+    triangle = [[-37.060, -10.270], [-37.020, -10.268], [-37.058, -10.262], [-37.060, -10.270]]
+    farm = make_farm(client)
+    plot = client.post(f"/farms/{farm['id']}/plots", json=plot_body(triangle)).json()
+    west, south, east, north = bounds(plot["query_geometry"]["coordinates"][0])
+    assert all(west <= x <= east and south <= y <= north for x, y in triangle)
+
+
+def test_square_boundary_gets_the_same_square_as_query_area(client):
     farm = make_farm(client)
     plot = client.post(f"/farms/{farm['id']}/plots", json=plot_body(SQUARE)).json()
-    query = plot["query_geometry"]["coordinates"][0]
-    assert {round(p[0], 4) for p in query} == {-37.05, -37.04}
-    assert {round(p[1], 3) for p in query} == {-10.27, -10.26}
+    assert bounds(plot["query_geometry"]["coordinates"][0]) == pytest.approx(bounds(SQUARE))
+    assert plot["centroid"] == pytest.approx([-37.045, -10.265])
+
+
+def test_stored_query_areas_from_the_old_rule_are_recomputed(client, settings):
+    import json
+    import sqlite3
+
+    from fastapi.testclient import TestClient
+
+    from app.main import create_app
+
+    farm = make_farm(client)
+    plot = client.post(f"/farms/{farm['id']}/plots", json=plot_body(L_SHAPE)).json()
+    old = [[-37.0495, -10.2695], [-37.0465, -10.2695], [-37.0465, -10.2665], [-37.0495, -10.2665],
+           [-37.0495, -10.2695]]  # quadrado de mesma área, que não envolve o L
+    db = sqlite3.connect(settings.var_dir / "app.db")
+    db.execute("UPDATE plot SET query_geometry_json = ?, centroid_lon = -37.0483 WHERE id = ?",
+               (json.dumps({"type": "Polygon", "coordinates": [old]}), plot["id"]))
+    db.commit()
+    db.close()
+    with TestClient(create_app(settings)) as restarted:
+        again = restarted.get(f"/plots/{plot['id']}").json()
+    assert bounds(again["query_geometry"]["coordinates"][0]) == pytest.approx(bounds(L_SHAPE))
+    assert again["centroid"] == pytest.approx(plot["centroid"])
 
 
 def test_database_from_before_query_geometry_is_migrated(tmp_path, settings):
