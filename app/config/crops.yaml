@@ -1,19 +1,97 @@
-# Valores APROXIMADOS, inspirados nos coeficientes de cultura (Kc) da FAO-56.
-# Preços em R$/kg são ILUSTRATIVOS (protótipo) — substituir por fonte oficial (ex.: CONAB).
-# gaez_name: nome da cultura no FAO GAEZ v4 (aptidão e rendimento); null = o GAEZ não cobre.
-# kc: um coeficiente por mês de ciclo, começando em planting_month.
+# Crop catalogue for Northeast Brazil.
+#
+# Values are APPROXIMATE, inspired by the FAO-56 crop coefficients (Kc); planting months assume
+# a rainy season starting around April and should be reviewed for each sub-region.
+# gaez_name: crop name in FAO GAEZ v4 (suitability and attainable yield); null = not covered by
+#            GAEZ, so the crop has no suitability score.
+# kc:        one coefficient per month of the cycle, starting in planting_month. Twelve values
+#            mean a perennial (or year-long) crop, which is not offered as a rotation step.
+# category:  grain | legume | root | oilseed | fibre | vegetable | fruit | forage | other
 crops:
-  - {id: milho, name: Maize, gaez_name: Maize, soil_restoring: false,
-     planting_month: 4, kc: [0.4, 0.8, 1.15, 1.0, 0.6], price_brl_per_kg: 1.2}
-  - {id: feijao, name: Common bean, gaez_name: Phaseolus bean, soil_restoring: true,
-     planting_month: 4, kc: [0.4, 1.05, 1.0], price_brl_per_kg: 6.0}
-  - {id: feijao_caupi, name: Cowpea, gaez_name: Cowpea, soil_restoring: true,
-     planting_month: 4, kc: [0.4, 1.0, 0.9], price_brl_per_kg: 5.0}
-  - {id: sorgo, name: Sorghum, gaez_name: Sorghum, soil_restoring: false,
-     planting_month: 4, kc: [0.4, 0.75, 1.0, 0.6], price_brl_per_kg: 1.0}
-  - {id: mandioca, name: Cassava, gaez_name: Cassava, soil_restoring: false,
-     planting_month: 4, kc: [0.3, 0.3, 0.5, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.5, 0.4, 0.3],
-     price_brl_per_kg: 0.8}
-  - {id: palma, name: Forage cactus, gaez_name: null, soil_restoring: false,
-     planting_month: 3, kc: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4],
-     price_brl_per_kg: null}
+  # --- grains ---
+  - {id: milho, name: Maize, category: grain, gaez_name: Maize, soil_restoring: false,
+     planting_month: 4, kc: [0.4, 0.8, 1.15, 1.0, 0.6]}
+  - {id: sorgo, name: Sorghum, category: grain, gaez_name: Sorghum, soil_restoring: false,
+     planting_month: 4, kc: [0.4, 0.75, 1.0, 0.6]}
+  - {id: milheto, name: Pearl millet, category: grain, gaez_name: Pearl millet,
+     soil_restoring: false, planting_month: 4, kc: [0.35, 0.7, 1.0, 0.4]}
+  - {id: arroz, name: Upland rice, category: grain, gaez_name: Dryland rice,
+     soil_restoring: false, planting_month: 4, kc: [0.5, 0.9, 1.15, 0.9]}
+  # --- legumes (restore the soil) ---
+  - {id: feijao, name: Common bean, category: legume, gaez_name: Phaseolus bean,
+     soil_restoring: true, planting_month: 4, kc: [0.4, 1.05, 1.0]}
+  - {id: feijao_caupi, name: Cowpea, category: legume, gaez_name: Cowpea, soil_restoring: true,
+     planting_month: 4, kc: [0.4, 1.0, 0.9]}
+  - {id: amendoim, name: Peanut, category: legume, gaez_name: Groundnut, soil_restoring: true,
+     planting_month: 4, kc: [0.4, 0.8, 1.15, 0.6]}
+  - {id: soja, name: Soybean, category: legume, gaez_name: Soybean, soil_restoring: true,
+     planting_month: 4, kc: [0.4, 0.8, 1.15, 0.8]}
+  - {id: guandu, name: Pigeon pea, category: legume, gaez_name: Pigeonpea, soil_restoring: true,
+     planting_month: 4, kc: [0.4, 0.8, 1.05, 1.05, 0.8, 0.6]}
+  # --- roots and tubers ---
+  - {id: mandioca, name: Cassava, category: root, gaez_name: Cassava, soil_restoring: false,
+     planting_month: 4, kc: [0.3, 0.3, 0.5, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.5, 0.4, 0.3]}
+  - {id: batata_doce, name: Sweet potato, category: root, gaez_name: Sweet potato,
+     soil_restoring: false, planting_month: 4, kc: [0.5, 0.9, 1.15, 0.65]}
+  - {id: inhame, name: Yam, category: root, gaez_name: Yam, soil_restoring: false,
+     planting_month: 4, kc: [0.5, 0.8, 1.1, 1.1, 1.0, 0.8, 0.6]}
+  # --- oilseeds ---
+  - {id: girassol, name: Sunflower, category: oilseed, gaez_name: Sunflower,
+     soil_restoring: false, planting_month: 4, kc: [0.35, 0.8, 1.1, 0.35]}
+  - {id: gergelim, name: Sesame, category: oilseed, gaez_name: null, soil_restoring: false,
+     planting_month: 4, kc: [0.35, 0.8, 1.1, 0.25]}
+  - {id: mamona, name: Castor bean, category: oilseed, gaez_name: null, soil_restoring: false,
+     planting_month: 4, kc: [0.35, 0.75, 1.15, 1.15, 0.55]}
+  # --- fibre ---
+  - {id: algodao, name: Cotton, category: fibre, gaez_name: Cotton, soil_restoring: false,
+     planting_month: 4, kc: [0.35, 0.7, 1.15, 1.15, 0.7]}
+  - {id: sisal, name: Sisal, category: fibre, gaez_name: null, soil_restoring: false,
+     planting_month: 3, kc: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4]}
+  # --- vegetables ---
+  - {id: tomate, name: Tomato, category: vegetable, gaez_name: Tomato, soil_restoring: false,
+     planting_month: 4, kc: [0.6, 0.9, 1.15, 0.8]}
+  - {id: cebola, name: Onion, category: vegetable, gaez_name: Onion, soil_restoring: false,
+     planting_month: 4, kc: [0.7, 0.9, 1.05, 0.75]}
+  - {id: abobora, name: Pumpkin, category: vegetable, gaez_name: null, soil_restoring: false,
+     planting_month: 4, kc: [0.5, 0.8, 1.0, 0.8]}
+  - {id: melancia, name: Watermelon, category: vegetable, gaez_name: null,
+     soil_restoring: false, planting_month: 4, kc: [0.4, 1.0, 0.75]}
+  - {id: melao, name: Melon, category: vegetable, gaez_name: null, soil_restoring: false,
+     planting_month: 4, kc: [0.5, 1.05, 0.75]}
+  # --- sugar and industrial ---
+  - {id: cana, name: Sugarcane, category: other, gaez_name: Sugarcane, soil_restoring: false,
+     planting_month: 3, kc: [0.4, 0.6, 0.9, 1.15, 1.25, 1.25, 1.25, 1.25, 1.2, 1.0, 0.8, 0.75]}
+  - {id: cafe, name: Coffee, category: other, gaez_name: Coffee, soil_restoring: false,
+     planting_month: 1, kc: [0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95]}
+  - {id: cacau, name: Cocoa, category: other, gaez_name: Cocoa, soil_restoring: false,
+     planting_month: 1, kc: [1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05]}
+  # --- fruit ---
+  - {id: banana, name: Banana, category: fruit, gaez_name: Banana, soil_restoring: false,
+     planting_month: 1, kc: [0.5, 0.6, 0.7, 0.85, 1.0, 1.1, 1.1, 1.1, 1.1, 1.05, 1.0, 1.0]}
+  - {id: laranja, name: Orange (citrus), category: fruit, gaez_name: Citrus,
+     soil_restoring: false, planting_month: 1,
+     kc: [0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65, 0.65]}
+  - {id: coco, name: Coconut, category: fruit, gaez_name: Coconut, soil_restoring: false,
+     planting_month: 1, kc: [0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95]}
+  - {id: manga, name: Mango, category: fruit, gaez_name: null, soil_restoring: false,
+     planting_month: 1, kc: [0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7]}
+  - {id: caju, name: Cashew, category: fruit, gaez_name: null, soil_restoring: false,
+     planting_month: 1, kc: [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6]}
+  - {id: mamao, name: Papaya, category: fruit, gaez_name: null, soil_restoring: false,
+     planting_month: 1, kc: [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9]}
+  - {id: maracuja, name: Passion fruit, category: fruit, gaez_name: null, soil_restoring: false,
+     planting_month: 1, kc: [0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75]}
+  - {id: abacaxi, name: Pineapple, category: fruit, gaez_name: null, soil_restoring: false,
+     planting_month: 1, kc: [0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35]}
+  - {id: uva, name: Grape, category: fruit, gaez_name: null, soil_restoring: false,
+     planting_month: 1, kc: [0.3, 0.5, 0.7, 0.85, 0.85, 0.8, 0.7, 0.6, 0.45, 0.35, 0.3, 0.3]}
+  - {id: goiaba, name: Guava, category: fruit, gaez_name: null, soil_restoring: false,
+     planting_month: 1, kc: [0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75]}
+  - {id: acerola, name: Acerola, category: fruit, gaez_name: null, soil_restoring: false,
+     planting_month: 1, kc: [0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75]}
+  # --- forage ---
+  - {id: palma, name: Forage cactus, category: forage, gaez_name: null, soil_restoring: false,
+     planting_month: 3, kc: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4]}
+  - {id: capim_elefante, name: Elephant grass, category: forage, gaez_name: null,
+     soil_restoring: false, planting_month: 3,
+     kc: [0.6, 0.9, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9, 0.8, 0.7]}

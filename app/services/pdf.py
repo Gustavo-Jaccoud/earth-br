@@ -34,13 +34,13 @@ from app.models.farms import Farm, Plot
 from app.models.reports import Report, ReportSection
 from app.services.dry_years import DROUGHT_ANOMALY_PCT
 
-PRODUCT = "earth + BR"
+PRODUCT = "Earth+br"
 LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "logo.png"
 DISCLAIMER = (
     "This report supports, and does not replace, the farmer's own judgment and the advice of "
     "local agronomists and extension services. The figures are estimates derived from public "
     "climate, satellite and crop-suitability datasets and may differ from the conditions "
-    "observed in the field. earth + BR is a prototype.")
+    "observed in the field. Earth+br is a prototype.")
 KIND_LABELS = {"analysis": "Land analysis report", "quiz": "Quick-start risk report"}
 
 # Página: margens laterais iguais; faixas fixas para cabeçalho e rodapé.

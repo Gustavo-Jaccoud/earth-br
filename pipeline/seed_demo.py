@@ -10,8 +10,8 @@ import httpx
 from app.clients.power import GRID_LAT, GRID_LON, PowerClient, PowerUnavailable, grid_cell
 from pipeline.region import load_bbox
 
-FARM = {"name": "Sítio Demonstração", "municipality": "Aquidabã", "state": "SE",
-        "ibge_code": "2800209", "owner": "Produtor de demonstração"}
+FARM = {"name": "Demo Farm", "municipality": "Aquidabã", "state": "SE",
+        "ibge_code": "2800209", "owner": "Demo farmer"}
 
 
 def _square(lon: float, lat: float, size: float = 0.002) -> dict:
@@ -22,8 +22,8 @@ def _square(lon: float, lat: float, size: float = 0.002) -> dict:
 
 # Os dois talhões caem na mesma célula do POWER (~50 km), então compartilham o cache.
 PLOTS = [
-    {"name": "Talhão 1", "current_crop": "milho", "geometry": _square(-37.050, -10.270)},
-    {"name": "Talhão 2", "current_crop": "feijao", "geometry": _square(-37.052, -10.274)},
+    {"name": "Field 1", "current_crop": "milho", "geometry": _square(-37.050, -10.270)},
+    {"name": "Field 2", "current_crop": "feijao", "geometry": _square(-37.052, -10.274)},
 ]
 
 

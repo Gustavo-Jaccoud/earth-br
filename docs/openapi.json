@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Field Shift API",
+    "title": "Earth+br API",
     "description": "\nDados da **NASA** (POWER, SMAP, GPM, MODIS) e da **FAO** (GAEZ) traduzidos para o produtor rural do\nNordeste: semáforos de chuva e umidade do solo, comparação de rotação de culturas, aptidão de cada\ncultura no local e relatórios em linguagem simples.\n\n**Fluxo típico:** cadastrar propriedade → desenhar talhão (polígono) → ver os semáforos →\ncomparar rotações → gerar relatório (e baixar o PDF).\n\n**Convenções:** datas em `AAAA-MM-DD`; coordenadas em `[longitude, latitude]` (GeoJSON, WGS84);\nerros no formato `{\"detail\": \"mensagem em português\"}`. `503` significa que a NASA POWER está\nindisponível e não há dados salvos para o local.\n\nOs dados da NASA têm cerca de 2 dias de atraso: datas de referência mais recentes são ajustadas\nautomaticamente (`reference_date_adjusted`).\n",
     "version": "0.1.0"
   },
@@ -924,7 +924,7 @@
           "relatórios"
         ],
         "summary": "Baixar relatório em PDF",
-        "description": "Relatório em PDF, pronto para baixar e compartilhar.",
+        "description": "The report as a PDF. The file is stored when the report is created and served from\ndisk afterwards (it is generated again if the stored file is missing).",
         "operationId": "get_report_pdf_reports__report_id__pdf_get",
         "parameters": [
           {
@@ -1357,6 +1357,11 @@
             "type": "array",
             "title": "Kc"
           },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "default": "other"
+          },
           "price_brl_per_kg": {
             "anyOf": [
               {
@@ -1376,8 +1381,7 @@
           "gaez_name",
           "soil_restoring",
           "planting_month",
-          "kc",
-          "price_brl_per_kg"
+          "kc"
         ],
         "title": "Crop"
       },

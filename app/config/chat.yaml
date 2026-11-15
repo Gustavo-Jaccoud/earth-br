@@ -9,7 +9,7 @@
 # fallback: fixed text WITHOUT numbers, used when the data is missing or inconsistent.
 # question: suggested question shown as a button in the chat (omit to hide the topic).
 generic: >-
-  I can only answer about what earth + BR measures for your land: rain, soil moisture,
+  I can only answer about what Earth+br measures for your land: rain, soil moisture,
   temperature, dry years, the crops that suit it, rotation options and your reports.
   Try one of the questions below.
 
@@ -95,7 +95,7 @@ topics:
     keywords: [money, cost*, lose, loss*, financial*, income, dinheiro, prejuizo*, perd*, custo*, custa*, renda]
     answer: null
     fallback: >-
-      earth + BR does not estimate financial losses: there is not enough data to support a
+      Earth+br does not estimate financial losses: there is not enough data to support a
       reliable figure yet. What it can show is how often rain fell short of what your crop
       needs, in the Quick start report and in the Land analysis.
 
@@ -123,7 +123,7 @@ topics:
     keywords: [forecast*, weather, tomorrow, next week, previsao, tempo, amanha]
     answer: null
     fallback: >-
-      earth + BR does not forecast the weather. It describes what has already been measured on
+      Earth+br does not forecast the weather. It describes what has already been measured on
       your land, compared with what is normal for the season, so you can judge the risk before
       you plant.
 
@@ -139,7 +139,7 @@ topics:
     keywords: [hello, hi, hey, good morning, good afternoon, good evening, oi, ola, bom dia, boa tarde, boa noite]
     answer: null
     fallback: >-
-      Hello! I am the earth + BR demo assistant. Ask me about the rain, the soil, the crops that
+      Hello! I am the Earth+br demo assistant. Ask me about the rain, the soil, the crops that
       suit your land or your reports.
 
   - id: thanks

@@ -41,7 +41,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         lifespan=lifespan,
-        title="Field Shift API",
+        title="Earth+br API",
         version="0.1.0",
         description=DESCRIPTION,
         openapi_tags=TAGS,

@@ -11,8 +11,11 @@ import numpy as np
 import xarray as xr
 from PIL import Image
 
+from app.config_loader import get_config
+
 CATALOG = "https://gaez-services.fao.org/server/rest/services/res05/ImageServer/query"
-CROPS = ["Maize", "Phaseolus bean", "Cowpea", "Sorghum", "Cassava"]
+# Every crop of the catalogue (app/config/crops.yaml) that GAEZ covers.
+CROPS = sorted({c.gaez_name for c in get_config().crops if c.gaez_name})
 PERIOD = "1981-2010"
 SUITABILITY = "Suitability index  range (0 – 10000); all land in grid cell"
 YIELD = "Average attainable yield of best occurring suitability class in grid cell"

@@ -62,10 +62,10 @@ def test_verdict_names_the_best_option(client, plot):
 
 
 def test_unknown_crop_422(client, plot):
-    response = compare(client, plot, {"options": [["milho"], ["arroz"]]})
+    response = compare(client, plot, {"options": [["milho"], ["quinoa"]]})
     assert response.status_code == 422
     detail = response.json()["detail"]
-    assert "arroz" in detail and "milho" in detail
+    assert "quinoa" in detail and "milho" in detail
 
 
 @pytest.mark.parametrize(

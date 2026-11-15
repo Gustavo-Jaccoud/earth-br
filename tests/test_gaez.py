@@ -46,13 +46,13 @@ def test_suitability_endpoint_ranks_crops(client):
                                                   "feijao_caupi"]
     assert body["items"][0] == {"crop": "sorgo", "name": "Sorghum", "suitability": 46.0,
                                 "attainable_yield_kg_ha": 1500.0}
-    assert body["without_data"] == ["palma"]
+    assert "palma" in body["without_data"] and "milho" not in body["without_data"]
 
 
 def test_suitability_endpoint_outside_downloaded_area(client):
     plot = make_plot(client, OUTSIDE)
     body = client.get(f"/plots/{plot['id']}/suitability").json()
-    assert body["items"] == [] and len(body["without_data"]) == 6
+    assert body["items"] == [] and "milho" in body["without_data"]
 
 
 def test_dry_years_endpoint(client, tmp_path):

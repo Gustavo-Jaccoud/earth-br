@@ -80,8 +80,8 @@ def test_reports_listed_most_recent_first(client, plot):
 
 
 def test_unknown_crop_422_and_nothing_saved(client, plot):
-    response = analyze(client, plot, {"rotation": {"options": [["milho"], ["arroz"]]}})
-    assert response.status_code == 422 and "arroz" in response.json()["detail"]
+    response = analyze(client, plot, {"rotation": {"options": [["milho"], ["quinoa"]]}})
+    assert response.status_code == 422 and "quinoa" in response.json()["detail"]
     assert client.get("/reports").json() == []
 
 

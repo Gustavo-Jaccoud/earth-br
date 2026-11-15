@@ -25,7 +25,7 @@ def test_every_operation_has_a_portuguese_summary_and_known_tag(client):
 
 def test_openapi_describes_the_api(client):
     spec = client.get("/openapi.json").json()
-    assert spec["info"]["title"] == "Field Shift API"
+    assert spec["info"]["title"] == "Earth+br API"
     assert "NASA" in spec["info"]["description"]
     assert [t["name"] for t in spec["tags"]] == [t["name"] for t in TAGS]
     assert all(t["description"] for t in spec["tags"])

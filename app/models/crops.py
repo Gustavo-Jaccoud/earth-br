@@ -8,4 +8,6 @@ class Crop(BaseModel):
     soil_restoring: bool
     planting_month: int
     kc: list[float]
-    price_brl_per_kg: float | None
+    # grain | legume | root | oilseed | fibre | vegetable | fruit | forage | other
+    category: str = "other"
+    price_brl_per_kg: float | None = None  # not used at the moment

@@ -14,9 +14,9 @@ CURL_FLOW = """\
 ```bash
 # 1. propriedade e talhão (o polígono é GeoJSON, em [longitude, latitude])
 curl -X POST localhost:8000/farms -H 'content-type: application/json' \\
-  -d '{"name": "Sítio Demonstração", "municipality": "Aquidabã", "state": "SE"}'
+  -d '{"name": "Demo Farm", "municipality": "Aquidabã", "state": "SE"}'
 curl -X POST localhost:8000/farms/1/plots -H 'content-type: application/json' \\
-  -d '{"name": "Talhão 1", "current_crop": "milho", "geometry": {"type": "Polygon",
+  -d '{"name": "Field 1", "current_crop": "milho", "geometry": {"type": "Polygon",
        "coordinates": [[[-37.05,-10.27],[-37.04,-10.27],[-37.04,-10.26],
                         [-37.05,-10.26],[-37.05,-10.27]]]}}'
 

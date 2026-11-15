@@ -1,4 +1,4 @@
-# Field Shift API — referência
+# Earth+br API — referência
 
 Documentação interativa (com botão **Try it out**): rode a API e abra **http://localhost:8000/docs** (Swagger) ou **http://localhost:8000/redoc** (ReDoc). O contrato completo, para gerar clientes, está em [`openapi.json`](openapi.json).
 
@@ -150,7 +150,8 @@ aptidão das culturas e anos secos). Parâmetros: `plot_id` (path, obrigatório,
 
 **`GET /reports/{report_id}`** — `report_id` (path, obrigatório, integer)
 
-**`GET /reports/{report_id}/pdf`** — Relatório em PDF, pronto para baixar e compartilhar. Parâmetros: `report_id` (path, obrigatório, integer).
+**`GET /reports/{report_id}/pdf`** — The report as a PDF. The file is stored when the report is created and served from
+disk afterwards (it is generated again if the stored file is missing). Parâmetros: `report_id` (path, obrigatório, integer).
 
 ## Assistente
 
@@ -187,9 +188,9 @@ e sugestões de contenção de danos. Parâmetros: `plot_id` (path, obrigatório
 ```bash
 # 1. propriedade e talhão (o polígono é GeoJSON, em [longitude, latitude])
 curl -X POST localhost:8000/farms -H 'content-type: application/json' \
-  -d '{"name": "Sítio Demonstração", "municipality": "Aquidabã", "state": "SE"}'
+  -d '{"name": "Demo Farm", "municipality": "Aquidabã", "state": "SE"}'
 curl -X POST localhost:8000/farms/1/plots -H 'content-type: application/json' \
-  -d '{"name": "Talhão 1", "current_crop": "milho", "geometry": {"type": "Polygon",
+  -d '{"name": "Field 1", "current_crop": "milho", "geometry": {"type": "Polygon",
        "coordinates": [[[-37.05,-10.27],[-37.04,-10.27],[-37.04,-10.26],
                         [-37.05,-10.26],[-37.05,-10.27]]]}}'
 
