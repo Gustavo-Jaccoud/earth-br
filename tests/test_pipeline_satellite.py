@@ -49,3 +49,29 @@ def test_gpm_to_layer_reorders_dims_and_masks_fill():
     assert layer.dims == ("time", "lat", "lon")
     assert np.isnan(layer.values).sum() == 1 and layer.isel(time=0, lat=0).values.tolist() == [
         1.0, 2.0, 3.0]
+
+
+def touch(folder, day, prefix="1"):
+    name = (f"{prefix}_GPM_3IMERGDF.07_3B-DAY.MS.MRG.3IMERG.{day}-S000000-E235959.V07B"
+            "_precipitation_subsetted.nc4")
+    (folder / name).touch()
+    return folder / name
+
+
+def test_downloaded_days_keeps_one_file_per_day(tmp_path):
+    touch(tmp_path, "20150101", "1")
+    newer = touch(tmp_path, "20150101", "2")
+    touch(tmp_path, "20150102")
+    (tmp_path / "notes.txt").touch()
+    days = gpm.downloaded_days(tmp_path)
+    assert list(days) == [date(2015, 1, 1), date(2015, 1, 2)]
+    assert days[date(2015, 1, 1)] == newer  # o de nome maior (job mais recente)
+
+
+def test_resume_start_is_the_day_after_the_last_contiguous_day(tmp_path):
+    for day in ("20150101", "20150102", "20150103", "20150110"):
+        touch(tmp_path, day)
+    days = gpm.downloaded_days(tmp_path)
+    assert gpm.resume_start(days, date(2015, 1, 1)) == date(2015, 1, 4)  # o buraco é refeito
+    assert gpm.resume_start({}, date(2015, 1, 1)) == date(2015, 1, 1)
+    assert gpm.resume_start(days, date(2015, 1, 2)) == date(2015, 1, 4)
