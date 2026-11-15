@@ -64,7 +64,7 @@ def _suggestions(answers: dict[str, Answer], quiz: QuizConfig) -> list[str]:
             for o in _chosen(question, answers[question.id]) if o.suggestion]
 
 
-def _financial(plot: Plot, power: PowerClient, gaez: GaezRepository) -> ReportSection:
+def financial_section(plot: Plot, power: PowerClient, gaez: GaezRepository) -> ReportSection:
     """Perda média por ano por falta de água: área × rendimento atingível (GAEZ) × fração da
     necessidade de água que a chuva não cobriu, na média de 2001-2020 (POWER) × preço."""
     title = "Financial impact"
@@ -100,7 +100,7 @@ def evaluate(plot: Plot, answers: QuizAnswers, power: PowerClient, rasters: Rast
         ReportSection(title="Risk", text=render(f"quiz.risk.{level}", risk=risk),
                       data={"risk": risk, "level": level, "answers": answers.answers}),
         reports.condition_section(plot, None, power, rasters, title="Environmental impact"),
-        _financial(plot, power, gaez),
+        financial_section(plot, power, gaez),
         ReportSection(
             title="Suggestions",
             text="\n".join(f"• {s}" for s in suggestions) or render("quiz.no_suggestions"),

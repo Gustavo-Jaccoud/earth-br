@@ -46,8 +46,8 @@ topics:
     question: Is my land at risk right now?
     keywords: [risk*, alert*, danger*, warning*, risco*, perigo*, alerta*]
     answer: >-
-      Right now {alerts} of the two indicators need attention. Rain is {rain_status} and soil
-      moisture is {soil_status}. Data up to {date}.
+      {summary} right now. Rain is {rain_status} and soil moisture is {soil_status}.
+      Data up to {date}.
     fallback: >-
       I could not load the indicators right now. The Dashboard shows a red or yellow alert
       whenever rain or soil moisture falls well below what is normal for the season.

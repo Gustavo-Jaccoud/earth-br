@@ -1035,6 +1035,81 @@
           }
         }
       }
+    },
+    "/chat/suggestions": {
+      "get": {
+        "tags": [
+          "assistente"
+        ],
+        "summary": "Saudação e perguntas sugeridas do assistente",
+        "description": "Greeting and starter questions for an empty chat.",
+        "operationId": "chat_intro_chat_suggestions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatIntro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plots/{plot_id}/chat": {
+      "post": {
+        "tags": [
+          "assistente"
+        ],
+        "summary": "Perguntar ao assistente de demonstração",
+        "description": "Demo assistant (no AI): finds the topic of the question by keywords and answers with a\npre-written text filled with the field's real data. When the data is missing the answer is\nthe topic's fixed text (`used_data: false`); an unrelated question gets a generic answer\n(`topic: \"generic\"`). Texts and keywords live in `app/config/chat.yaml`.",
+        "operationId": "ask_plots__plot_id__chat_post",
+        "parameters": [
+          {
+            "name": "plot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Plot Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatMessage"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatAnswer"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1066,6 +1141,81 @@
         },
         "type": "object",
         "title": "AnalysisRequest"
+      },
+      "ChatAnswer": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "used_data": {
+            "type": "boolean",
+            "title": "Used Data"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic",
+          "answer",
+          "used_data",
+          "sources",
+          "suggestions"
+        ],
+        "title": "ChatAnswer"
+      },
+      "ChatIntro": {
+        "properties": {
+          "greeting": {
+            "type": "string",
+            "title": "Greeting"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "greeting",
+          "suggestions"
+        ],
+        "title": "ChatIntro"
+      },
+      "ChatMessage": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ChatMessage"
       },
       "ClimateResponse": {
         "properties": {
@@ -2302,6 +2452,10 @@
     {
       "name": "relatórios",
       "description": "Relatórios de análise salvos, com exportação em PDF."
+    },
+    {
+      "name": "assistente",
+      "description": "Assistente de demonstração (sem IA): respostas prontas preenchidas com os dados reais do talhão."
     },
     {
       "name": "partida rápida",

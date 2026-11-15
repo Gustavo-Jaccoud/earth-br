@@ -41,6 +41,9 @@ TAGS = [
      "description": "Camadas de mapa (imagens mensais com limites) para sobrepor ao mapa."},
     {"name": "relatórios",
      "description": "Relatórios de análise salvos, com exportação em PDF."},
+    {"name": "assistente",
+     "description": "Assistente de demonstração (sem IA): respostas prontas preenchidas com os "
+                    "dados reais do talhão."},
     {"name": "partida rápida",
      "description": "Trilha de perguntas que gera o relatório final com risco, impacto e "
                     "sugestões."},
@@ -69,6 +72,8 @@ SUMMARIES = {
     ("GET", "/reports/{report_id}/pdf"): "Baixar relatório em PDF",
     ("GET", "/quiz"): "Perguntas da trilha (partida rápida)",
     ("POST", "/plots/{plot_id}/quiz"): "Enviar respostas e gerar o relatório final",
+    ("GET", "/chat/suggestions"): "Saudação e perguntas sugeridas do assistente",
+    ("POST", "/plots/{plot_id}/chat"): "Perguntar ao assistente de demonstração",
 }
 
 

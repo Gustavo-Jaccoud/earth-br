@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api import (
+    chat,
     climate,
     crops,
     farms,
@@ -67,7 +68,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
               name="maps")
 
     for module in (farms, climate, signals, satellite, crops, rotation, regional, maps,
-                   reports, quiz):
+                   reports, quiz, chat):
         app.include_router(module.router)
     apply_docs(app)
 

@@ -149,6 +149,22 @@ aptidão das culturas e anos secos). Parâmetros: `plot_id` (path, obrigatório,
 
 **`GET /reports/{report_id}/pdf`** — Relatório em PDF, pronto para baixar e compartilhar. Parâmetros: `report_id` (path, obrigatório, integer).
 
+## Assistente
+
+Assistente de demonstração (sem IA): respostas prontas preenchidas com os dados reais do talhão.
+
+| Rota | O que faz |
+|---|---|
+| `GET /chat/suggestions` | Saudação e perguntas sugeridas do assistente |
+| `POST /plots/{plot_id}/chat` | Perguntar ao assistente de demonstração |
+
+**`GET /chat/suggestions`** — Greeting and starter questions for an empty chat.
+
+**`POST /plots/{plot_id}/chat`** — Demo assistant (no AI): finds the topic of the question by keywords and answers with a
+pre-written text filled with the field's real data. When the data is missing the answer is
+the topic's fixed text (`used_data: false`); an unrelated question gets a generic answer
+(`topic: "generic"`). Texts and keywords live in `app/config/chat.yaml`. Parâmetros: `plot_id` (path, obrigatório, integer).
+
 ## Partida rápida
 
 Trilha de perguntas que gera o relatório final com risco, impacto e sugestões.
