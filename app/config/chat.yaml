@@ -2,7 +2,8 @@
 #
 # keywords: English and Portuguese, lowercase, no accents. A plain word matches a whole word;
 #   a word ending in * matches by prefix (chuv* -> chuva, chuvoso); several words match in sequence.
-#   The topic with most keywords found wins; on a tie, the one listed first.
+#   The topic with most keywords found wins; on a tie, the higher `priority` (default 0), then
+#   the one listed first. More specific topics carry a higher priority.
 # answer:   template filled with real data ({fields} are documented in app/services/chat.py);
 #           null for topics that are plain text.
 # fallback: fixed text WITHOUT numbers, used when the data is missing or inconsistent.
@@ -24,7 +25,7 @@ topics:
 
   - id: soil_moisture
     question: Is my soil dry?
-    keywords: [soil, moisture, humid*, wet, solo, umidade, umido, molhad*]
+    keywords: [soil, moisture, humid*, wet, dry, water, solo, terra, umidade, umido, molhad*, seco, seca, agua]
     answer: "{message} Data up to {date}."
     fallback: >-
       I could not load the soil moisture data right now. On the Dashboard, the soil moisture card
@@ -44,7 +45,8 @@ topics:
 
   - id: risk
     question: Is my land at risk right now?
-    keywords: [risk*, alert*, danger*, warning*, risco*, perigo*, alerta*]
+    priority: 2
+    keywords: [risk*, alert*, danger*, warning*, drought*, right now, about my land, my farm, how is my, risco*, perigo*, alerta*, situacao, minha terra, minha lavoura, minha roca]
     answer: >-
       {summary} right now. Rain is {rain_status} and soil moisture is {soil_status}.
       Data up to {date}.
@@ -55,7 +57,8 @@ topics:
 
   - id: dry_years
     question: Which were the driest years here?
-    keywords: [drought*, driest, dry year*, dry years, years, seca, secas, secos, estiagem, anos]
+    priority: 1
+    keywords: [drought*, driest, dry year*, worst, seca, secas, estiagem, anos secos, ano seco, pior*]
     answer: "The rainy season here usually runs from {season}. {message}"
     fallback: >-
       I could not load the rainfall history right now. The Land analysis page lists the years
@@ -64,7 +67,8 @@ topics:
 
   - id: crops
     question: Which crops suit my land?
-    keywords: [crop*, suit*, grow*, plant*, cultur*, cultiv*, apta*, aptid*]
+    priority: 2
+    keywords: [crop*, suit*, grow*, plant*, maize, corn, sorghum, bean*, cowpea, cassava, cultur*, cultiv*, apta*, aptid*, milho, sorgo, feijao, mandioca]
     answer: >-
       For the local climate and soil, without irrigation, the most suitable crops are: {items}.
       Suitability is a model of potential, not a harvest forecast.
@@ -75,11 +79,12 @@ topics:
 
   - id: rotation
     question: How does my current crop compare with a rotation?
+    priority: 3
     keywords: [rotat*, rotac*, rotacao de culturas, compar*, sequenc*, alternativ*]
     answer: >-
-      {verdict} Your current crop, {current}, scores {current_total} out of 100, and
-      {alternative} scores {alternative_total}. Scores combine water coverage and crop
-      suitability; run a Quick start for the full comparison.
+      {verdict} {current} alone scores {current_total} out of 100 and {alternative} scores
+      {alternative_total} out of 100. Scores combine water coverage and crop suitability; run a
+      Quick start for the full comparison.
     fallback: >-
       I cannot compare rotations for this property yet: it needs a current crop and suitability
       data for the location. The Quick start compares your practice with alternative rotations.
@@ -87,7 +92,8 @@ topics:
 
   - id: financial
     question: How much could a dry year cost me?
-    keywords: [money, cost*, lose, loss*, financial*, income, dinheiro, prejuizo*, perd*, custo*, renda]
+    priority: 3
+    keywords: [money, cost*, lose, loss*, financial*, income, dinheiro, prejuizo*, perd*, custo*, custa*, renda]
     answer: >-
       {text} It uses the attainable yield for your area and the share of the crop's water need
       that rain did not cover, on average.
@@ -107,7 +113,7 @@ topics:
 
   - id: sources
     question: Where does the data come from?
-    keywords: [data, source*, come from, nasa, satellite*, gaez, fao, reliab*, accura*, dados, fonte*, satelite*, confia*]
+    keywords: [data, source*, come from, nasa, satellite*, gaez, fao, reliab*, accura*, trust*, numbers, dados, fonte*, satelite*, confia*, numeros]
     answer: null
     fallback: >-
       Rain, soil moisture and temperature come from NASA POWER, which covers each place day by
@@ -115,8 +121,17 @@ topics:
       late. Crop suitability comes from FAO GAEZ, a global model of crop potential. Nothing here
       replaces a soil test or the advice of a local agronomist.
 
+  - id: forecast
+    priority: 4
+    keywords: [forecast*, weather, tomorrow, next week, previsao, tempo, amanha]
+    answer: null
+    fallback: >-
+      earth + BR does not forecast the weather. It describes what has already been measured on
+      your land, compared with what is normal for the season, so you can judge the risk before
+      you plant.
+
   - id: help
-    keywords: [help, can you do, what can i ask, how does this work, ajuda, como funciona, o que voce faz]
+    keywords: [help, can you do, what can i ask, how does this work, ajuda, como funciona, o que voce faz, pode fazer, voce pode]
     answer: null
     fallback: >-
       I am a demo assistant with pre-written answers, not an AI. I can tell you about the rain,
@@ -129,3 +144,9 @@ topics:
     fallback: >-
       Hello! I am the earth + BR demo assistant. Ask me about the rain, the soil, the crops that
       suit your land or your reports.
+
+  - id: thanks
+    keywords: [thank*, thanks, obrigad*, valeu]
+    answer: null
+    fallback: >-
+      You are welcome! Ask me anything else about your land.

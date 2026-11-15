@@ -60,6 +60,7 @@ class QuizConfig(BaseModel):
 
 class ChatTopic(BaseModel):
     id: str
+    priority: int = 0  # breaks ties between topics with the same number of keywords
     question: str | None = None
     keywords: list[str]
     answer: str | None = None

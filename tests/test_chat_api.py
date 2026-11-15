@@ -56,7 +56,26 @@ def test_crops_answer_lists_most_suitable_first(client, plot):
 
 def test_rotation_answer_names_current_crop_and_alternative(client, plot):
     answer = ask(client, plot, "compare rotation options").json()["answer"]
-    assert "Maize" in answer and "Sorghum → Common bean" in answer and "best option" in answer
+    assert "Maize" in answer and "Sorghum → Common bean" in answer
+    totals = re.findall(r"scores (\S+) out of 100", answer)
+    assert len(totals) == 2 and all(re.fullmatch(r"\d+", t) for t in totals)  # mesmo formato
+
+
+def test_rotation_answer_says_when_current_crop_is_already_best(client, plot):
+    answer = ask(client, plot, "compare rotation options").json()["answer"]
+    current, alternative = (int(t) for t in re.findall(r"scores (\d+) out of 100", answer))
+    expected = "already the best option" if current >= alternative else "scores higher than"
+    assert expected in answer
+
+
+def test_signal_sources_come_from_the_signal_itself(client, tmp_path, plot):
+    from app.repositories.rasters import RasterStore
+    from tests.helpers import make_layer
+
+    make_layer(tmp_path, "precipitation", "2015-01-01", "2026-12-31", source="NASA GPM TESTE")
+    client.app.state.rasters = RasterStore(tmp_path)
+    assert ask(client, plot, "how is the rain?").json()["sources"] == ["NASA GPM TESTE"]
+    assert ask(client, plot, "am I at risk?").json()["sources"] == ["NASA GPM TESTE", "NASA POWER"]
 
 
 def test_portuguese_question_gets_the_same_topic(client, plot):
@@ -65,7 +84,8 @@ def test_portuguese_question_gets_the_same_topic(client, plot):
 
 @pytest.mark.parametrize("message,topic", [
     ("download the pdf report", "reports"), ("where does the data come from?", "sources"),
-    ("what can you do?", "help"), ("hello", "greeting"),
+    ("what can you do?", "help"), ("hello", "greeting"), ("thank you", "thanks"),
+    ("will it rain tomorrow? what is the forecast", "forecast"),
 ])
 def test_fixed_topics(client, plot, message, topic):
     body = ask(client, plot, message).json()
@@ -84,7 +104,7 @@ def test_power_outage_falls_back_to_fixed_text(client, tmp_path):
     plot = make_plot(client, crop="milho")
     install_power(client, tmp_path, plot, history=False, recent=False)
     for message, topic in [("how is the rain?", "rain"), ("am I at risk?", "risk"),
-                           ("how hot is it?", "temperature"), ("drought years", "dry_years"),
+                           ("how hot is it?", "temperature"), ("driest years", "dry_years"),
                            ("compare rotation", "rotation"), ("money lose", "financial")]:
         response = ask(client, plot, message)
         assert response.status_code == 200

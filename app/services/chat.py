@@ -34,13 +34,14 @@ def _has(words: list[str], keyword: str) -> bool:
 
 
 def match(message: str, cfg: ChatConfig) -> ChatTopic | None:
-    """Topic with the most keywords in the message; ties go to the first listed; None if none."""
+    """Topic with the most keywords in the message. Ties go to the higher `priority`, then to
+    the first listed. None when no keyword is found."""
     words = normalize(message)
-    best, best_score = None, 0
+    best, best_key = None, (0, 0)
     for topic in cfg.topics:
         score = sum(_has(words, keyword) for keyword in topic.keywords)
-        if score > best_score:
-            best, best_score = topic, score
+        if score and (score, topic.priority) > best_key:
+            best, best_key = topic, (score, topic.priority)
     return best
 
 
@@ -59,6 +60,7 @@ def suggestions(cfg: ChatConfig, after: str | None, n: int = 3) -> list[str]:
 
 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
           "October", "November", "December"]
+SOURCES = "_sources"  # optional builder field: where the numbers actually came from
 STATUS = {"green": "within the normal range", "yellow": "below average",
           "red": "well below average"}
 SUMMARY = {0: "Neither indicator needs attention", 1: "One of the two indicators needs attention",
@@ -77,7 +79,8 @@ class Context:
 def _signal(ctx: Context, kind: str) -> dict[str, str]:
     result = build_signals(ctx.plot, None, ctx.power, ctx.rasters)
     signal = next(s for s in result.signals if s.kind == kind)
-    return {"message": signal.message, "date": result.reference_date.isoformat()}
+    return {"message": signal.message, "date": result.reference_date.isoformat(),
+            SOURCES: [signal.source]}
 
 
 def _temperature(ctx: Context) -> dict[str, str] | None:
@@ -102,7 +105,8 @@ def _risk(ctx: Context) -> dict[str, str]:
     alerts = sum(s.color != "green" for s in result.signals)
     return {"summary": SUMMARY[alerts], "rain_status": STATUS[by_kind["rain"].color],
             "soil_status": STATUS[by_kind["soil_moisture"].color],
-            "date": result.reference_date.isoformat()}
+            "date": result.reference_date.isoformat(),
+            SOURCES: sorted({s.source for s in result.signals})}
 
 
 def _dry_years(ctx: Context) -> dict[str, str]:
@@ -131,11 +135,15 @@ def _rotation(ctx: Context) -> dict[str, str] | None:
     result = rotation.compare(ctx.plot, ctx.farm,
                               RotationRequest(options=[[current], [main.id, legume.id]]),
                               ctx.power, ctx.rasters, ctx.gaez)
-    totals = {tuple(o.crops): o.total for o in result.options}
-    return {"verdict": result.verdict, "current": crops[current].name,
-            "current_total": f"{totals[(current,)]:.0f}",
+    totals = {tuple(o.crops): round(o.total) for o in result.options}
+    current_total, alternative_total = totals[(current,)], totals[(main.id, legume.id)]
+    verdict = ("Your current crop is already the best option for this field."
+               if current_total >= alternative_total
+               else "A rotation scores higher than your current crop on this field.")
+    return {"verdict": verdict, "current": crops[current].name,
+            "current_total": str(current_total),
             "alternative": f"{main.name} → {legume.name}",
-            "alternative_total": f"{totals[(main.id, legume.id)]:.0f}"}
+            "alternative_total": str(alternative_total)}
 
 
 def _financial(ctx: Context) -> dict[str, str] | None:
@@ -143,7 +151,7 @@ def _financial(ctx: Context) -> dict[str, str] | None:
     return {"text": section.text} if section.data else None
 
 
-BUILDERS: dict[str, Callable[[Context], dict[str, str] | None]] = {
+BUILDERS: dict[str, Callable[[Context], dict | None]] = {
     "rain": lambda ctx: _signal(ctx, "rain"),
     "soil_moisture": lambda ctx: _signal(ctx, "soil_moisture"),
     "temperature": _temperature,
@@ -166,19 +174,20 @@ def reply(message: str, ctx: Context) -> ChatAnswer:
     if topic is None:
         return ChatAnswer(topic="generic", answer=_text(cfg.generic), used_data=False,
                           sources=[], suggestions=suggestions(cfg, None))
-    answer, used_data = None, False
+    answer, used_data, sources = None, False, topic.sources
     builder = BUILDERS.get(topic.id)
     if topic.answer and builder:
         try:
             fields = builder(ctx)
             if fields is not None:
+                sources = fields.pop(SOURCES, topic.sources)
                 answer, used_data = _text(topic.answer.format(**fields)), True
         except Exception:  # noqa: BLE001 — any data problem means the fixed text, never an error
             answer = None
     if answer is None:
         answer, used_data = _text(topic.fallback), False
     return ChatAnswer(topic=topic.id, answer=answer, used_data=used_data,
-                      sources=topic.sources if used_data else [],
+                      sources=sources if used_data else [],
                       suggestions=suggestions(cfg, topic.id))
 
 
