@@ -61,8 +61,7 @@ def compare(plot: Plot, farm: Farm, request: RotationRequest, power: PowerClient
         if ndvi is None:
             criteria.append(CriterionScore(
                 name="soil", score=None, source="NASA MODIS",
-                detail="No vegetation vigor (NDVI) data for this field: satellite data is "
-                       "only available in the demo region."))
+                detail="No vegetation vigor (NDVI) satellite data for this field yet."))
         else:
             soil = min(max((ndvi - lo) / (hi - lo), 0.0), 1.0) * 100
             note = ""

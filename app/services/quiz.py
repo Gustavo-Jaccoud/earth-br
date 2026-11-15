@@ -85,7 +85,10 @@ def financial_section(plot: Plot, power: PowerClient, gaez: GaezRepository) -> R
         title=title,
         text=render("quiz.financial", value=value, area=f"{plot.area_ha:.1f}",
                     crop=crop.name.lower()),
-        data={"estimated_loss_brl_per_year": round(estimate), "crop": crop.id,
+        # `inputs` lists where the numbers came from (each item has its own `source`).
+        data={"inputs": [{"name": "attainable yield", "source": "FAO GAEZ v4"},
+                         {"name": "rain and water demand", "source": "NASA POWER"}],
+              "estimated_loss_brl_per_year": round(estimate), "crop": crop.id,
               "attainable_yield_kg_ha": found[1], "water_coverage_pct": round(coverage, 1)},
     )
 
