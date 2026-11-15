@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
+from time import sleep
 
 import httpx
 import pandas as pd
@@ -26,6 +27,8 @@ from pipeline.region import load_bbox
 GPM_CONCEPT_ID = "C2723754864-GES_DISC"  # GPM_3IMERGDF v07 (conferido no CMR)
 CMR_GRANULES = "https://cmr.earthdata.nasa.gov/search/granules.json"
 CHUNK_MONTHS = 3
+MAX_FAILURES = 5  # falhas seguidas antes de desistir
+RETRY_WAIT_S = 30
 CHUNK_TIMEOUT_S = 40 * 60  # um bloco de 3 meses leva poucos minutos; acima disto, travou
 
 
@@ -93,11 +96,14 @@ def main(start: date = date(2015, 1, 1), end: date | None = None,
     token = os.environ.get("EDL_TOKEN")  # token do Earthdata Login (alternativa a usuário/senha)
     # Sem token: EDL_USERNAME/EDL_PASSWORD ou ~/.netrc.
     client = Client(token=token) if token else Client()
-    first = resume_start(downloaded_days(raw), start)
-    if first > start:
-        print(f"Retomando de {first} (dias anteriores já baixados).", flush=True)
     pool = ThreadPoolExecutor(max_workers=1)
-    for a, b in date_chunks(first, end, months=CHUNK_MONTHS) if first <= end else []:
+    failures = 0
+    while True:
+        # Sempre retoma do primeiro dia que falta: um bloco que falhou no meio continua dali.
+        first = resume_start(downloaded_days(raw), start)
+        if first > end:
+            break
+        a, b = date_chunks(first, end, months=CHUNK_MONTHS)[0]
         print(f"GPM {a}..{b}", flush=True)
         request = Request(
             collection=Collection(id=GPM_CONCEPT_ID), spatial=BBox(west, south, east, north),
@@ -106,11 +112,19 @@ def main(start: date = date(2015, 1, 1), end: date | None = None,
             variables=["precipitation"])
         try:
             pool.submit(_download_chunk, client, request, raw).result(timeout=CHUNK_TIMEOUT_S)
+            failures = 0
         except FutureTimeout:
             # As chamadas ao Harmony não têm tempo limite; uma que trava não pode ser cancelada.
             print(f"O bloco {a}..{b} travou por mais de {CHUNK_TIMEOUT_S // 60} min. "
                   "Rode de novo para retomar deste ponto.", flush=True)
             os._exit(2)
+        except Exception as exc:  # noqa: BLE001 — erro de rede/serviço: tenta de novo
+            failures += 1
+            print(f"  falhou ({type(exc).__name__}: {str(exc)[:120]}); tentativa {failures} de "
+                  f"{MAX_FAILURES}", flush=True)
+            if failures >= MAX_FAILURES:
+                raise
+            sleep(RETRY_WAIT_S)
     present = {day: path for day, path in downloaded_days(raw).items() if start <= day <= end}
     layers = []
     for path in present.values():  # um arquivo por dia; sem dask, abre e junta no tempo
