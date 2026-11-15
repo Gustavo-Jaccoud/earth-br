@@ -30,8 +30,12 @@ class MonthlyValue(BaseModel):
 
 
 class MonthlySeries(BaseModel):
-    variable: str  # rain | soil_moisture | temperature
+    # rain | soil_moisture | temperature | temperature_max | et0 | water_balance | dry_spell |
+    # rain_satellite | soil_moisture_satellite | ndvi
+    variable: str
     unit: str
+    source: str
+    normal_period: str  # years behind `normal`, e.g. "2001-2020"
     months: list[MonthlyValue]
 
 
@@ -41,3 +45,4 @@ class MonthlyClimate(BaseModel):
     reference_date: date
     normal_period: str
     variables: list[MonthlySeries]
+    unavailable: list[str]  # satellite variables with no data for this field yet

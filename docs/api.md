@@ -58,8 +58,11 @@ Série diária da NASA POWER no ponto do talhão (chuva, temperatura, umidade do
 
 **`GET /plots/{plot_id}/climate`** — `plot_id` (path, obrigatório, integer), `start` (query, enum), `end` (query, enum)
 
-**`GET /plots/{plot_id}/climate/monthly`** — Rain (monthly total, mm), root-zone soil moisture (%) and air temperature (°C) for the
-last `months` months, each next to the 2001-2020 normal for that calendar month. The current
+**`GET /plots/{plot_id}/climate/monthly`** — Monthly values for the last `months` months, each next to the historical normal for that
+calendar month. NASA POWER: rain, root-zone soil moisture, mean and maximum air temperature,
+reference evapotranspiration (Hargreaves), water balance (rain minus evapotranspiration) and
+the longest run of dry days. Satellite (when the rasters exist): rain (GPM), soil moisture
+(SMAP) and NDVI (MODIS); the ones without data are listed in `unavailable`. The current
 month is partial (`complete: false`). Parâmetros: `plot_id` (path, obrigatório, integer), `months` (query, integer).
 
 ## Semáforos

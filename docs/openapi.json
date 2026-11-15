@@ -357,7 +357,7 @@
           "clima"
         ],
         "summary": "Série mensal de clima contra a normal",
-        "description": "Rain (monthly total, mm), root-zone soil moisture (%) and air temperature (°C) for the\nlast `months` months, each next to the 2001-2020 normal for that calendar month. The current\nmonth is partial (`complete: false`).",
+        "description": "Monthly values for the last `months` months, each next to the historical normal for that\ncalendar month. NASA POWER: rain, root-zone soil moisture, mean and maximum air temperature,\nreference evapotranspiration (Hargreaves), water balance (rain minus evapotranspiration) and\nthe longest run of dry days. Satellite (when the rasters exist): rain (GPM), soil moisture\n(SMAP) and NDVI (MODIS); the ones without data are listed in `unavailable`. The current\nmonth is partial (`complete: false`).",
         "operationId": "get_monthly_climate_plots__plot_id__climate_monthly_get",
         "parameters": [
           {
@@ -1718,6 +1718,13 @@
             },
             "type": "array",
             "title": "Variables"
+          },
+          "unavailable": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable"
           }
         },
         "type": "object",
@@ -1726,7 +1733,8 @@
           "source",
           "reference_date",
           "normal_period",
-          "variables"
+          "variables",
+          "unavailable"
         ],
         "title": "MonthlyClimate"
       },
@@ -1740,6 +1748,14 @@
             "type": "string",
             "title": "Unit"
           },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "normal_period": {
+            "type": "string",
+            "title": "Normal Period"
+          },
           "months": {
             "items": {
               "$ref": "#/components/schemas/MonthlyValue"
@@ -1752,6 +1768,8 @@
         "required": [
           "variable",
           "unit",
+          "source",
+          "normal_period",
           "months"
         ],
         "title": "MonthlySeries"

@@ -9,3 +9,5 @@ soil_moisture:
   window_days: 7
   pct: {yellow: -10, red: -25}
 min_satellite_years: 5
+# Dia com menos chuva que isto conta como dia seco (variável "maior sequência sem chuva").
+dry_day_mm: 1.0

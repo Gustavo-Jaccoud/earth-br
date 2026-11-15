@@ -3,8 +3,9 @@ from datetime import date, timedelta
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.api.deps import get_plot_or_404, get_power_client
+from app.api.deps import get_plot_or_404, get_power_client, get_rasters
 from app.clients.power import POWER_PARAMS, POWER_UNITS, PowerClient, last_available_date
+from app.config_loader import get_config
 from app.models.climate import (
     ClimateResponse,
     ClimateSeries,
@@ -14,7 +15,8 @@ from app.models.climate import (
     MonthlyValue,
 )
 from app.models.farms import Plot
-from app.services import monthly
+from app.repositories.rasters import RasterStore
+from app.services import geometry, monthly
 
 router = APIRouter(tags=["clima"])
 
@@ -60,23 +62,44 @@ def get_monthly_climate(
     months: int = Query(12, ge=1, le=24),
     plot: Plot = Depends(get_plot_or_404),
     power: PowerClient = Depends(get_power_client),
+    rasters: RasterStore = Depends(get_rasters),
 ) -> MonthlyClimate:
-    """Rain (monthly total, mm), root-zone soil moisture (%) and air temperature (°C) for the
-    last `months` months, each next to the 2001-2020 normal for that calendar month. The current
+    """Monthly values for the last `months` months, each next to the historical normal for that
+    calendar month. NASA POWER: rain, root-zone soil moisture, mean and maximum air temperature,
+    reference evapotranspiration (Hargreaves), water balance (rain minus evapotranspiration) and
+    the longest run of dry days. Satellite (when the rasters exist): rain (GPM), soil moisture
+    (SMAP) and NDVI (MODIS); the ones without data are listed in `unavailable`. The current
     month is partial (`complete: false`)."""
     lon, lat = plot.centroid
+    dry_day_mm = get_config().signals.dry_day_mm
     recent = power.recent(lat, lon)
     reference = last_available_date(recent, "PRECTOTCORR")
-    normals = monthly.normals(power.history(lat, lon))
-    series = monthly.last_months(recent, reference, months)
+    normals = monthly.normals(power.history(lat, lon), dry_day_mm=dry_day_mm)
+    series = monthly.last_months(recent, reference, months, dry_day_mm)
+
+    def values(items: list[monthly.Month], normal: dict[int, float]) -> list[MonthlyValue]:
+        return [MonthlyValue(label=m.label, complete=m.complete,
+                             value=None if m.value is None else round(m.value, 2),
+                             normal=round(normal[int(m.label[5:])], 2)
+                             if int(m.label[5:]) in normal else None) for m in items]
+
     variables = [
-        MonthlySeries(variable=name, unit=unit, months=[
-            MonthlyValue(label=m.label, complete=m.complete,
-                         value=None if m.value is None else round(m.value, 2),
-                         normal=round(normals[name][int(m.label[5:])], 2)
-                         if int(m.label[5:]) in normals[name] else None)
-            for m in series[name]])
+        MonthlySeries(variable=name, unit=unit, source="NASA POWER", normal_period="2001-2020",
+                      months=values(series[name], normals[name]))
         for name, (_, unit, _, _) in monthly.VARIABLES.items()
     ]
+    unavailable = []
+    shape = geometry.to_shape(plot.geometry)
+    for name, (layer, unit, agg, scale) in monthly.SATELLITE.items():
+        daily = rasters.plot_series(layer, shape)
+        if daily is None or daily.dropna().empty:
+            unavailable.append(name)
+            continue
+        items, normal = monthly.satellite_months(daily, reference, months, agg, scale)
+        variables.append(MonthlySeries(
+            variable=name, unit=unit, source=rasters.meta(layer)["source"],
+            normal_period=monthly.satellite_years(daily, reference),
+            months=values(items, normal)))
     return MonthlyClimate(plot_id=plot.id, source="NASA POWER", reference_date=reference,
-                          normal_period="2001-2020", variables=variables)
+                          normal_period="2001-2020", variables=variables,
+                          unavailable=unavailable)
