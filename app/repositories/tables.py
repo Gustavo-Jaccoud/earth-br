@@ -19,7 +19,8 @@ class PlotRow(SQLModel, table=True):
     farm_id: int = Field(foreign_key="farm.id", index=True)
     name: str
     current_crop: str | None = None
-    geometry_json: str
+    geometry_json: str  # real boundary
+    query_geometry_json: str | None = None  # square used for NASA POWER (null on old rows)
     centroid_lon: float
     centroid_lat: float
     area_ha: float

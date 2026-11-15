@@ -1,12 +1,14 @@
 # Sentence templates (English). Callers pass numbers already formatted.
+# soil_moisture: NASA POWER GWETROOT, the share of saturation in the top metre of soil
+# (0% = dry, 100% = saturated). It is NOT a percentage of soil volume.
 # {deviation} is always a positive magnitude ("60%" or "15 mm"): the sentence already says "below".
 rain.green: "It rained {value} mm in the last {days} days (regional average: {normal} mm). No rainfall alert."
 rain.yellow: "It rained {value} mm in the last {days} days, {deviation} below average ({normal} mm). Stay alert: crops may run short of water."
 rain.red: "It rained {value} mm in the last {days} days, {deviation} below average ({normal} mm). High risk for crops."
 rain.dry_season: "Normally dry period: it rained {value} mm in the last {days} days (average of {normal} mm). No rainfall alert."
-soil_moisture.green: "Root-zone soil moisture is at {value}, within the expected range for this time of year (average of {normal}). No alert."
-soil_moisture.yellow: "Root-zone soil moisture is at {value}, {deviation} below expected (average of {normal}). Stay alert."
-soil_moisture.red: "Root-zone soil moisture is at {value}, {deviation} below expected (average of {normal}). Very dry soil: high risk of water stress."
+soil_moisture.green: "Root-zone soil moisture is at {value} of saturation, within the expected range for this time of year (average of {normal}). No alert."
+soil_moisture.yellow: "Root-zone soil moisture is at {value} of saturation, {deviation} below expected (average of {normal}). Stay alert."
+soil_moisture.red: "Root-zone soil moisture is at {value} of saturation, {deviation} below expected (average of {normal}). Very dry soil: high risk of water stress."
 rotation.verdict: "The best option for this field is {best}, scoring {total} out of 100."
 rotation.no_data: "Not enough data to compare the options."
 dry_years.year: "In {year}, rainy-season rainfall was {rain}% below normal ({mm} mm)."

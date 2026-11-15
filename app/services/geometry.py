@@ -37,3 +37,15 @@ def area_ha(poly: Polygon) -> float:
     lat = poly.centroid.y
     m2 = poly.area * METERS_PER_DEGREE**2 * math.cos(math.radians(lat))
     return m2 / 10_000
+
+
+def query_square(poly: Polygon) -> GeoJSONPolygon:
+    """Square with the same area as the polygon, centred on its centroid (same flat local
+    projection as area_ha). It is the spatial reference used for NASA POWER queries."""
+    lon, lat = centroid(poly)
+    half_m = math.sqrt(area_ha(poly) * 10_000) / 2
+    d_lat = half_m / METERS_PER_DEGREE
+    d_lon = half_m / (METERS_PER_DEGREE * math.cos(math.radians(lat)))
+    ring = [(lon - d_lon, lat - d_lat), (lon + d_lon, lat - d_lat), (lon + d_lon, lat + d_lat),
+            (lon - d_lon, lat + d_lat), (lon - d_lon, lat - d_lat)]
+    return GeoJSONPolygon(type="Polygon", coordinates=[ring])

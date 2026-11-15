@@ -7,12 +7,17 @@ from app.services import geometry
 
 
 def _plot(row: PlotRow) -> Plot:
+    boundary = GeoJSONPolygon.model_validate_json(row.geometry_json)
+    # Rows created before the query square existed get it computed on the fly.
+    query = (GeoJSONPolygon.model_validate_json(row.query_geometry_json)
+             if row.query_geometry_json else geometry.query_square(geometry.to_shape(boundary)))
     return Plot(
         id=row.id,
         farm_id=row.farm_id,
         name=row.name,
         current_crop=row.current_crop,
-        geometry=GeoJSONPolygon.model_validate_json(row.geometry_json),
+        geometry=boundary,
+        query_geometry=query,
         centroid=(row.centroid_lon, row.centroid_lat),
         area_ha=row.area_ha,
         in_demo_region=row.in_demo_region,
@@ -48,6 +53,7 @@ class FarmRepository:
             name=data.name,
             current_crop=data.current_crop,
             geometry_json=data.geometry.model_dump_json(),
+            query_geometry_json=geometry.query_square(shape).model_dump_json(),
             centroid_lon=lon,
             centroid_lat=lat,
             area_ha=round(geometry.area_ha(shape), 4),

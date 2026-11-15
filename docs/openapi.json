@@ -1844,6 +1844,9 @@
             "type": "integer",
             "title": "Farm Id"
           },
+          "query_geometry": {
+            "$ref": "#/components/schemas/GeoJSONPolygon"
+          },
           "centroid": {
             "prefixItems": [
               {
@@ -1873,6 +1876,7 @@
           "geometry",
           "id",
           "farm_id",
+          "query_geometry",
           "centroid",
           "area_ha",
           "in_demo_region"

@@ -9,6 +9,7 @@ SQUARE = GeoJSONPolygon(type="Polygon", coordinates=[[(-37.05, -10.27), (-37.04,
                                                       (-37.04, -10.26), (-37.05, -10.26),
                                                       (-37.05, -10.27)]])
 PLOT = Plot(id=1, farm_id=1, name="Talhão 1", current_crop="milho", geometry=SQUARE,
+            query_geometry=SQUARE,
             centroid=(-37.045, -10.265), area_ha=121.9, in_demo_region=True)
 FARM = Farm(id=1, name="Sítio Demonstração", municipality="Aquidabã", state="SE")
 
